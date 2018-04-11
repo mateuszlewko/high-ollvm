@@ -1,0 +1,6 @@
+(library
+ ((name    high_ollvm)
+  (wrapped true)
+  (libraries (core llvm))
+ )
+)
