@@ -1,3 +1,3 @@
 module Ast = Ast
 module Ez = Ez
-module LlvmGateway = Llvmgateway
+module LLGate = Llvmgateway

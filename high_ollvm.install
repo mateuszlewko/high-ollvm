@@ -1,0 +1,4 @@
+lib: [
+  "_build/install/default/lib/high_ollvm/META" {"META"}
+  "_build/install/default/lib/high_ollvm/opam" {"opam"}
+]
