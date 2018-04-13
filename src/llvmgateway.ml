@@ -59,53 +59,6 @@ let cconv : Ast.cconv -> int =
   | CC_Coldcc -> cold
   | CC_Cc i   -> assert false
 
-(* let typ_attr : Ast.param_attr -> Llvm.Attribute.t =
-  let open Llvm.Attribute
-  in function
-  | PARAMATTR_Zeroext   -> Zext
-  | PARAMATTR_Signext   -> Sext
-  | PARAMATTR_Inreg     -> Inreg
-  | PARAMATTR_Byval     -> Byval
-  | PARAMATTR_Sret      -> Structret
-  | PARAMATTR_Noalias   -> Noalias
-  | PARAMATTR_Nocapture -> Nocapture
-  | PARAMATTR_Nest      -> Nest
-
-let fn_attr : Ast.fn_attr -> Llvm.Attribute.t =
-  let open Llvm.Attribute
-  in function
-  | FNATTR_Alignstack i     -> Stackalignment i
-  | FNATTR_Alwaysinline     -> Alwaysinline
-  | FNATTR_Builtin          -> assert false
-  | FNATTR_Cold             -> assert false
-  | FNATTR_Inlinehint       -> Inlinehint
-  | FNATTR_Jumptable        -> assert false
-  | FNATTR_Minsize          -> assert false
-  | FNATTR_Naked            -> Naked
-  | FNATTR_Nobuiltin        -> assert false
-  | FNATTR_Noduplicate      -> assert false
-  | FNATTR_Noimplicitfloat  -> Noimplicitfloat
-  | FNATTR_Noinline         -> Noinline
-  | FNATTR_Nonlazybind      -> NonLazyBind
-  | FNATTR_Noredzone        -> Noredzone
-  | FNATTR_Noreturn         -> Noreturn
-  | FNATTR_Nounwind         -> Nounwind
-  | FNATTR_Optnone          -> assert false
-  | FNATTR_Optsize          -> Optsize
-  | FNATTR_Readnone         -> Readnone
-  | FNATTR_Readonly         -> Readonly
-  | FNATTR_Returns_twice    -> ReturnsTwice
-  | FNATTR_Sanitize_address -> assert false
-  | FNATTR_Sanitize_memory  -> assert false
-  | FNATTR_Sanitize_thread  -> assert false
-  | FNATTR_Ssp              -> Ssp
-  | FNATTR_Sspreq           -> Sspreq
-  | FNATTR_Sspstrong        -> assert false
-  | FNATTR_Uwtable          -> UWTable
-  | FNATTR_String s         -> assert false
-  | FNATTR_Key_value (k, v) -> assert false
-  | FNATTR_Attr_grp g       -> assert false *)
-
 let rec typ : env -> Ast.typ -> Llvm.lltype =
   fun env ->
   let ctx = env.c in

@@ -1,5 +1,5 @@
 opam-version: "1.2"
-maintainer: "mateuszlewko@gmai.com"
+maintainer: "mateusz.lewko@gmail.com"
 
 build: [
   ["jbuilder" "build" "--only" "high_ollvm" "--root" "." "-j" jobs "@install"]

@@ -19,10 +19,6 @@ val visibility : Ast.visibility -> Llvm.Visibility.t
 
 val cconv : Ast.cconv -> int
 
-(* val typ_attr : Ast.param_attr -> Llvm.Attribute.t *)
-
-(* val fn_attr : Ast.fn_attr -> Llvm.Attribute.t *)
-
 val typ : env -> Ast.typ -> Llvm.lltype
 
 val icmp : Ast.icmp -> Llvm.Icmp.t
