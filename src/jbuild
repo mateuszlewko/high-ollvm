@@ -1,4 +1,6 @@
+(jbuild_version 1)
+
 (library
  ((name    high_ollvm)
-  (wrapped true)
+  (public_name high_ollvm)
   (libraries (core llvm))))

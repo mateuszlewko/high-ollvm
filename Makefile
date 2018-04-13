@@ -1,19 +1,18 @@
-
-.PHONY: default build install uninstall utop test clean
+.PHONY: default build install uninstall test clean
 
 default: build
 
 build:
-	$(MAKE) -C src build
+	jbuilder build
 
-# Install all libraries and executables
+test:
+	jbuilder runtest -f
+
 install:
-	$(MAKE) -C src install
+	jbuilder install
 
 uninstall:
-	$(MAKE) -C src uninstall
+	jbuilder uninstall
 
-# Build and run tests
-test:
-	$(MAKE) -C src test
-
+clean:
+	jbuilder clean

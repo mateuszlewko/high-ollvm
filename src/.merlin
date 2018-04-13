@@ -1,3 +1,4 @@
+B ../_build/default/src/.high_ollvm.objs
 B /home/mateuszlewko/.opam/4.05.0/lib/base
 B /home/mateuszlewko/.opam/4.05.0/lib/base/caml
 B /home/mateuszlewko/.opam/4.05.0/lib/base/md5
@@ -28,7 +29,6 @@ B /home/mateuszlewko/.opam/4.05.0/lib/spawn
 B /home/mateuszlewko/.opam/4.05.0/lib/stdio
 B /home/mateuszlewko/.opam/4.05.0/lib/typerep
 B /home/mateuszlewko/.opam/4.05.0/lib/variantslib
-B _build/default/.high_ollvm.objs
 FLG -open High_ollvm__ -w -40
 S .
 S /home/mateuszlewko/.opam/4.05.0/lib/base

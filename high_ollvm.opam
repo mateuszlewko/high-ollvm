@@ -1,12 +1,8 @@
 opam-version: "1.2"
-maintainer: "YOUR EMAIL ADDRESS"
-authors: ["YOUR NAME"]
-homepage: "https://github.com/USERNAME/sample-application"
-bug-reports: "https://github.com/USERNAME/sample-application/issues"
-dev-repo: "https://github.com/USERNAME/sample-application.git"
+maintainer: "mateuszlewko@gmai.com"
 
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["jbuilder" "build" "--only" "high_ollvm" "--root" "." "-j" jobs "@install"]
 ]
 
 depends: [
