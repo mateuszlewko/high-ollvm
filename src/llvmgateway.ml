@@ -363,6 +363,10 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
      let (env, llv) = instr env inst in
      ({ env with mem = (id, llv) :: env.mem }, llv)
 
+  | INSTR_Bitcast ((t, v), ty)               -> 
+    let llv = value env t v in 
+    env, build_bitcast llv (ll_type env ty) "" env.b
+
 let global : env -> Ast.global -> env =
   fun env g ->
   let llv = value env g.g_typ (match g.g_value with Some x -> x

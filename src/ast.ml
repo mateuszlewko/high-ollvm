@@ -190,6 +190,7 @@ and value =
   | INSTR_Fence
   | INSTR_AtomicCmpXchg
   | INSTR_AtomicRMW
+  | INSTR_Bitcast of tvalue * raw_type
 
   (* Terminators *)
   | INSTR_Invoke of tident * tvalue list * tident * tident

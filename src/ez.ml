@@ -89,6 +89,8 @@ module Instr = struct
     let ptr = struct_gep s ix in 
     ptr::[load ptr] *)
 
+  let bitcast v ty = ty, Ast.INSTR_Bitcast (ty, v)
+
   let gep = get_elem_ptr
 
   let eq = icmp Ast.Eq let ne = icmp Ast.Ne
