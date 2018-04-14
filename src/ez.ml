@@ -5,11 +5,12 @@ module Type = struct
   type t = Ast.raw_type
 
   let i1 = TYPE_I 1
+  let i8 = TYPE_I 8
   let i32 = TYPE_I 32
-  let half = TYPE_Half
   let float = TYPE_Float
   let double = TYPE_Double
   let pointer t = TYPE_Pointer t
+  let ptr t = TYPE_Pointer t
   let vector n t = TYPE_Vector (n, t)
   let label = TYPE_Label
   let void = TYPE_Void
@@ -24,9 +25,9 @@ module Value = struct
 
   let i1 n = (Type.i1, Ast.VALUE_Integer n)
 
-  let i32 n = (Type.i32, Ast.VALUE_Integer n)
+  let i8 n = (Type.i8, Ast.VALUE_Integer n)
 
-  let half f = (Type.half, Ast.VALUE_Float f)
+  let i32 n = (Type.i32, Ast.VALUE_Integer n)
 
   let float f = (Type.float, Ast.VALUE_Float f)
 

@@ -7,16 +7,17 @@ module Type : sig
 
   type t = Ast.raw_type
 
-  val i1 : t
-  val i32 : t
-  val half : t
-  val float : t
-  val double : t
-  val pointer : t -> t
-  val vector : int -> t -> t
-  val label : t
-  val void : t
-  val array : int -> t -> t
+  val i1        : t
+  val i8        : t
+  val i32       : t
+  val float     : t
+  val double    : t
+  val pointer   : t      -> t
+  val ptr       : t      -> t
+  val vector    : int    -> t -> t
+  val label     : t
+  val void      : t
+  val array     : int    -> t -> t
   val structure : t list -> t
 
 end
@@ -33,8 +34,8 @@ module Value : sig
      when using both Value and Type modules. *)
 
   val i1 : int -> t
+  val i8 : int -> t
   val i32 : int -> t
-  val half : float -> t
   val float : float -> t
   val double : float -> t
   val vector : t list -> t
