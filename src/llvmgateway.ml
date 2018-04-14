@@ -66,7 +66,7 @@ let cconv : Ast.cconv -> int =
   | CC_Coldcc -> cold
   | CC_Cc i   -> assert false
 
-let rec typ : env -> Ast.raw_type -> Llvm.lltype =
+let rec ll_type : env -> Ast.raw_type -> Llvm.lltype =
   fun env ->
   let ctx = env.c in
   let open Llvm
@@ -78,7 +78,7 @@ let rec typ : env -> Ast.raw_type -> Llvm.lltype =
                       | 32 -> i32_type ctx
                       | 64 -> i64_type ctx
                       | _  -> integer_type ctx i end
-  | TYPE_Pointer t         -> pointer_type (typ env t)
+  | TYPE_Pointer t         -> pointer_type (ll_type env t)
   | TYPE_Void              -> void_type ctx
   | TYPE_Half              -> assert false
   | TYPE_Float             -> float_type ctx
@@ -89,15 +89,15 @@ let rec typ : env -> Ast.raw_type -> Llvm.lltype =
   | TYPE_Label             -> label_type ctx
   | TYPE_Metadata          -> assert false
   | TYPE_X86_mmx           -> x86_mmx_type ctx
-  | TYPE_Array (i, t)      -> array_type (typ env t) i
+  | TYPE_Array (i, t)      -> array_type (ll_type env t) i
   | TYPE_Function (r, a)   ->
-     function_type (typ env r) (Array.of_list a |> Array.map (typ env))
+     function_type (ll_type env r) (Array.of_list a |> Array.map (ll_type env))
   | TYPE_Struct s          ->
-     struct_type ctx (Array.of_list s |> Array.map (typ env))
+     struct_type ctx (Array.of_list s |> Array.map (ll_type env))
   | TYPE_Packed_struct s   ->
-     packed_struct_type ctx (Array.of_list s |> Array.map (typ env))
+     packed_struct_type ctx (Array.of_list s |> Array.map (ll_type env))
   | TYPE_Opaque            -> assert false
-  | TYPE_Vector (i, t)      -> vector_type (typ env t) i
+  | TYPE_Vector (i, t)     -> vector_type (ll_type env t) i
 
 let icmp : Ast.icmp -> Llvm.Icmp.t =
   let open Llvm.Icmp
@@ -184,18 +184,18 @@ let rec value : env -> Ast.raw_type -> Ast.value -> Llvm.llvalue =
   let open Llvm
   in function
   | VALUE_Ident i          -> lookup env i
-  | VALUE_Integer i        -> const_int (typ env ty) i
-  | VALUE_Float f          -> const_float (typ env ty) f
+  | VALUE_Integer i        -> const_int (ll_type env ty) i
+  | VALUE_Float f          -> const_float (ll_type env ty) f
   | VALUE_Bool b           -> const_int (Llvm.i1_type env.c) (if b then 1 else 0)
-  | VALUE_Null             -> const_null (typ env ty)
-  | VALUE_Undef            -> undef (typ env ty)
+  | VALUE_Null             -> const_null (ll_type env ty)
+  | VALUE_Undef            -> undef (ll_type env ty)
   | VALUE_Struct s         ->
      const_struct env.c (Array.of_list s |> Array.map (fun (ty, v) -> value env ty v))
   | VALUE_Packed_struct s  ->
      const_packed_struct env.c (Array.of_list s
                                 |> Array.map (fun (ty, v) -> value env ty v))
   | VALUE_Array a          ->
-     const_array  (typ env ty) (Array.of_list a
+     const_array  (ll_type env ty) (Array.of_list a
                                 |> Array.map (fun (ty, v) -> value env ty v))
   | VALUE_Vector v         ->
      const_vector (Array.of_list v |> Array.map (fun (ty, v) -> value env ty v))
@@ -233,7 +233,7 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
   | INSTR_Conversion (conv, ty, v, ty') ->
      let v = value env ty v in
      let conv = conversion_type conv in
-     (env, conv v (typ env ty'))
+     (env, conv v (ll_type env ty'))
 
   | INSTR_GetElementPtr ((t, v), tvl)       ->
      let indices = List.map (fun (t,v) -> value env t v) tvl
@@ -283,9 +283,9 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
   | INSTR_Alloca (ty, nb, _)          ->
      (env,
        match nb with
-       | None -> build_alloca (typ env ty) "" env.b
+       | None -> build_alloca (ll_type env ty) "" env.b
        | Some (t, nb) ->
-          build_array_alloca (typ env ty) (value env t nb) "" env.b )
+          build_array_alloca (ll_type env ty) (value env t nb) "" env.b )
 
   | INSTR_Load (_, (t, v), _)                 ->
      (env, build_load (value env t v) "" env.b)
@@ -375,7 +375,7 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
   fun env dc ->
   let name = (string_of_ident dc.dc_name) in
   let fn =  match Llvm.lookup_function name env.m with
-    | None -> Llvm.declare_function name (typ env dc.dc_type) env.m ;
+    | None -> Llvm.declare_function name (ll_type env dc.dc_type) env.m ;
     | Some fn -> fn in
   (env, fn)
 

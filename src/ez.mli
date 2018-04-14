@@ -12,6 +12,7 @@ module Type : sig
   val i32       : t
   val float     : t
   val double    : t
+  val fn        : t      -> t list -> t
   val pointer   : t      -> t
   val ptr       : t      -> t
   val vector    : int    -> t -> t
@@ -75,6 +76,11 @@ module Instr : sig
   (** [store val ptr] store [val] in [ptr] alloca. *)
   (* FIXME: should return instr instead of t? *)
   val store : ?volatile:bool -> ?align:int option -> Value.t -> Value.t -> t
+
+  (** Get element pointer from aggregate.  *)
+  val get_elem_ptr : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
+  val struct_gep   : Ast.tvalue -> int      -> Ast.raw_type * Ast.instr
+  val gep          : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
 
   (** Int comparison. *)
   val eq  : Value.t -> Value.t -> t

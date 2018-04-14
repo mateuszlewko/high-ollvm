@@ -9,6 +9,7 @@ module Type = struct
   let i32 = TYPE_I 32
   let float = TYPE_Float
   let double = TYPE_Double
+  let fn ret_t arg_ts = TYPE_Function (ret_t, arg_ts)
   let pointer t = TYPE_Pointer t
   let ptr t = TYPE_Pointer t
   let vector n t = TYPE_Vector (n, t)
@@ -77,6 +78,18 @@ module Instr = struct
 
   let icmp cmp (t, op1) (_, op2) =
     (Type.i1, Ast.INSTR_ICmp (cmp, t, op1, op2))
+
+  let get_elem_ptr v ixs = 
+    Type.ptr Type.void, Ast.INSTR_GetElementPtr (v, List.map Value.i32 ixs)
+  
+  let struct_gep s ix = get_elem_ptr s [0; ix]
+
+  (* let struct_gep_load s ix = 
+    ident 
+    let ptr = struct_gep s ix in 
+    ptr::[load ptr] *)
+
+  let gep = get_elem_ptr
 
   let eq = icmp Ast.Eq let ne = icmp Ast.Ne
   let ugt = icmp Ast.Ugt let uge = icmp Ast.Uge
