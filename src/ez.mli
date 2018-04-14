@@ -5,7 +5,7 @@ module Type : sig
 
   open Ast
 
-  type t = Ast.typ
+  type t = Ast.raw_type
 
   val i1 : t
   val i32 : t

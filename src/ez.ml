@@ -2,7 +2,7 @@ module Type = struct
 
   open Ast
 
-  type t = Ast.typ
+  type t = Ast.raw_type
 
   let i1 = TYPE_I 1
   let i32 = TYPE_I 32

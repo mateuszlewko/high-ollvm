@@ -99,9 +99,9 @@ and ident =
   | ID_Global of string
   | ID_Local  of string
 
-and typ =
+and raw_type =
   | TYPE_I of int
-  | TYPE_Pointer of typ
+  | TYPE_Pointer of raw_type
   | TYPE_Void
   | TYPE_Half
   | TYPE_Float
@@ -112,12 +112,12 @@ and typ =
   | TYPE_Label
   | TYPE_Metadata
   | TYPE_X86_mmx
-  | TYPE_Array of (int * typ)
-  | TYPE_Function of (typ * typ list)
-  | TYPE_Struct of typ list
-  | TYPE_Packed_struct of typ list
+  | TYPE_Array of (int * raw_type)
+  | TYPE_Function of (raw_type * raw_type list)
+  | TYPE_Struct of raw_type list
+  | TYPE_Packed_struct of raw_type list
   | TYPE_Opaque
-  | TYPE_Vector of (int * typ)
+  | TYPE_Vector of (int * raw_type)
 
 and metadata =
   | METADATA_Const of tvalue
@@ -149,9 +149,9 @@ and fast_math = Nnan | Ninf | Nsz | Arcp | Fast
 and conversion_type = Trunc|Zext|Sext|Fptrunc|Fpext|Uitofp|Sitofp|Fptoui
                        |Fptosi|Inttoptr|Ptrtoint|Bitcast
 
-and tvalue = typ * value
+and tvalue = raw_type * value
 
-and tident = typ * ident
+and tident = raw_type * ident
 
 (** FIXME: should be splitted into const/value? *)
 and value =
@@ -168,11 +168,11 @@ and value =
   | VALUE_Zero_initializer
 
  and instr =
-  | INSTR_IBinop of ibinop * typ * value * value
-  | INSTR_ICmp of icmp * typ * value * value
-  | INSTR_FBinop of fbinop * fast_math list * typ * value * value
-  | INSTR_FCmp of fcmp * typ * value * value
-  | INSTR_Conversion of conversion_type * typ * value * typ
+  | INSTR_IBinop of ibinop * raw_type * value * value
+  | INSTR_ICmp of icmp * raw_type * value * value
+  | INSTR_FBinop of fbinop * fast_math list * raw_type * value * value
+  | INSTR_FCmp of fcmp * raw_type * value * value
+  | INSTR_Conversion of conversion_type * raw_type * value * raw_type
   | INSTR_GetElementPtr of tvalue * tvalue list
   | INSTR_ExtractElement of tvalue * tvalue
   | INSTR_InsertElement of tvalue * tvalue * tvalue
@@ -180,9 +180,9 @@ and value =
   | INSTR_ExtractValue of tvalue * int list
   | INSTR_InsertValue of tvalue * tvalue * int list
   | INSTR_Call of tident * tvalue list
-  | INSTR_Alloca of typ * tvalue option * int option (* typ, nb el, align *)
+  | INSTR_Alloca of raw_type * tvalue option * int option (* typ, nb el, align *)
   | INSTR_Load of bool(*=volatile*) * tvalue * int option (* FIXME: use tident instead of value *)
-  | INSTR_Phi of typ * (value * ident) list
+  | INSTR_Phi of raw_type * (value * ident) list
   | INSTR_Select of tvalue * tvalue * tvalue (* if * then * else *)
   | INSTR_VAArg
   | INSTR_LandingPad
@@ -212,7 +212,7 @@ and toplevelentry =
   | TLE_Datalayout of string
   | TLE_Declaration of declaration
   | TLE_Definition of definition
-  | TLE_Type_decl of (ident * typ)
+  | TLE_Type_decl of (ident * raw_type)
   | TLE_Global of global
   | TLE_Metadata of string * metadata
   | TLE_Attribute_group of int * fn_attr list
@@ -221,7 +221,7 @@ and toplevelentries = toplevelentry list
 
 and global = {
   g_ident: ident;
-  g_typ: typ;
+  g_typ: raw_type;
   g_constant: bool;
   g_value: value option;
 
@@ -242,7 +242,7 @@ and thread_local_storage = TLS_Localdynamic
 
 and declaration = {
   dc_name: ident;
-  dc_type: typ; (* TYPE_Function (ret_t * args_t) *)
+  dc_type: raw_type; (* TYPE_Function (ret_t * args_t) *)
 
   (* ret_attrs * args_attrs *)
   dc_param_attrs: param_attr list * param_attr list list;

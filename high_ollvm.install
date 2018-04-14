@@ -24,8 +24,6 @@ lib: [
   "_build/install/default/lib/high_ollvm/high_ollvm__Llvmgateway.cmi"
   "_build/install/default/lib/high_ollvm/high_ollvm__Llvmgateway.cmx"
   "_build/install/default/lib/high_ollvm/high_ollvm__Llvmgateway.cmt"
-  "_build/install/default/lib/high_ollvm/high_ollvm__Llvmgateway.cmti"
-  "_build/install/default/lib/high_ollvm/llvmgateway.mli"
   "_build/install/default/lib/high_ollvm/llvmgateway.ml"
   "_build/install/default/lib/high_ollvm/high_ollvm.cma"
   "_build/install/default/lib/high_ollvm/high_ollvm.cmxa"

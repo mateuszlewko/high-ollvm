@@ -1,12 +1,19 @@
 open Ast
 
-type env = { c: Llvm.llcontext;
-             m: Llvm.llmodule;
-             b: Llvm.llbuilder;
+type env = { c : Llvm.llcontext;
+             m : Llvm.llmodule;
+             b : Llvm.llbuilder;
 
              (* llvalue/llbasicblock binded to Ast.ident*)
-             mem: (Ast.ident * Llvm.llvalue) list;
-             labels: (string * Llvm.llbasicblock) list }
+             mem    : (Ast.ident * Llvm.llvalue) list;
+             labels : (string * Llvm.llbasicblock) list }
+
+let create_env ctx ll_mod bd = { c = ctx; m = ll_mod; b = bd; mem = []
+                               ; labels = [] }
+
+let env_of_mod ll_mod = 
+  let ctx = Llvm.global_context () in 
+  create_env ctx ll_mod (Llvm.builder ctx)
 
 let lookup env id = List.assoc id env.mem
 
@@ -59,7 +66,7 @@ let cconv : Ast.cconv -> int =
   | CC_Coldcc -> cold
   | CC_Cc i   -> assert false
 
-let rec typ : env -> Ast.typ -> Llvm.lltype =
+let rec typ : env -> Ast.raw_type -> Llvm.lltype =
   fun env ->
   let ctx = env.c in
   let open Llvm
@@ -172,7 +179,7 @@ let conversion_type : Ast.conversion_type ->
   | Bitcast  -> const_bitcast
 
 (** FIXME: should be splitted into const/value? *)
-let rec value : env -> Ast.typ -> Ast.value -> Llvm.llvalue =
+let rec value : env -> Ast.raw_type -> Ast.value -> Llvm.llvalue =
   fun env ty ->
   let open Llvm
   in function

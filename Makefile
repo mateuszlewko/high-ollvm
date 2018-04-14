@@ -9,6 +9,7 @@ test:
 	jbuilder runtest -f
 
 install:
+	jbuilder build @install
 	jbuilder install
 
 uninstall:
