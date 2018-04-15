@@ -56,8 +56,8 @@ module Instr = struct
 
   let ident = Value.ident
 
-  let call ((t, _) as fn) args =
-    (t, Ast.INSTR_Call (ident fn, args))
+  let call ?(tail=false) ((t, _) as fn) args =
+    (t, Ast.INSTR_Call (tail, ident fn, args))
 
   let phi value_label =
     let t = List.hd value_label |> fst |> fst in
@@ -186,6 +186,8 @@ module Instr = struct
     Ast.INSTR_Assign (id, expr)
 
   let ( <-- ) tid texpr = assign tid texpr
+
+  let unreachable = Ast.INSTR_Unreachable
 
   (* let ignore (_, expr) = expr *)
 

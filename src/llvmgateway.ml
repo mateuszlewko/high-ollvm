@@ -11,6 +11,8 @@ type env = { c : Llvm.llcontext;
 let create_env ctx ll_mod bd = { c = ctx; m = ll_mod; b = bd; mem = []
                                ; labels = [] }
 
+let (>>*) m f = f m; m
+
 let env_of_mod ll_mod = 
   let ctx = Llvm.global_context () in 
   create_env ctx ll_mod (Llvm.builder ctx)
@@ -289,11 +291,11 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
         (env, build_insertvalue vec el idx "" env.b)
      | _ -> assert false end
 
-  | INSTR_Call ((t, i), args)                ->
+  | INSTR_Call (tail, (t, i), args)             ->
      let fn = lookup_fn env i in
      let args = Array.of_list args
                 |> Array.map (fun (t, v) -> value env t v) in
-     (env, build_call fn args "" env.b)
+     (env, build_call fn args "" env.b >>* set_tail_call tail)
 
   | INSTR_Alloca (ty, nb, _)          ->
      (env,

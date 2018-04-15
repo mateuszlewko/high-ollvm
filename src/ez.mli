@@ -54,7 +54,7 @@ module Instr : sig
   type t = Type.t * Ast.instr
 
   (** [call fn args] call the function [fn] with [args] as argument. *)
-  val call : Value.t -> Value.t list -> t
+  val call : ?tail:bool -> Value.t -> Value.t list -> t
 
   (** [phi [(value1, label1); ... ; (valueN, labelN)]] return a value depending on
       the incoming block. [value1, ..., valueN] must have the same type. *)
@@ -200,6 +200,8 @@ module Instr : sig
 
   (** Infix operator equivalent to [assign] function. *)
   val ( <-- ) : Value.t -> t -> Ast.instr
+
+  val unreachable : Ast.instr
 
   (** Converts a [t] into a [ollvm] instr. *)
   (* val ignore : t -> Ast.instr *)

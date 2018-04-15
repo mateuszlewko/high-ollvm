@@ -179,7 +179,7 @@ and value =
   | INSTR_ShuffleVector of tvalue * tvalue * tvalue
   | INSTR_ExtractValue of tvalue * int list
   | INSTR_InsertValue of tvalue * tvalue * int list
-  | INSTR_Call of tident * tvalue list
+  | INSTR_Call of bool * tident * (tvalue list)
   | INSTR_Alloca of raw_type * tvalue option * int option (* typ, nb el, align *)
   | INSTR_Load of bool(*=volatile*) * tvalue * int option (* FIXME: use tident instead of value *)
   | INSTR_Phi of raw_type * (value * ident) list
