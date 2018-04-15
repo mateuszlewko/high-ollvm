@@ -15,9 +15,11 @@ module Type = struct
   let vector n t = TYPE_Vector (n, t)
   let label = TYPE_Label
   let void = TYPE_Void
+  let opaque = TYPE_Opaque
   let array n t = TYPE_Array (n, t)
-  let structure s = TYPE_Struct s
-
+  let structure ?(packed=false) s = if packed
+                                    then TYPE_Packed_struct s
+                                    else TYPE_Struct s
 end
 
 module Value = struct
@@ -89,7 +91,7 @@ module Instr = struct
     let ptr = struct_gep s ix in 
     ptr::[load ptr] *)
 
-  let bitcast v ty = ty, Ast.INSTR_Bitcast (ty, v)
+  let bitcast v ty = ty, Ast.INSTR_Bitcast (v, ty)
 
   let gep = get_elem_ptr
 
@@ -185,7 +187,7 @@ module Instr = struct
 
   let ( <-- ) tid texpr = assign tid texpr
 
-  let ignore (_, expr) = expr
+  (* let ignore (_, expr) = expr *)
 
 end
 
@@ -267,6 +269,17 @@ module Module = struct
     m_module: Ast.modul;
     m_env: Local.t;
   }
+
+  let empty = 
+    { m_module = {
+        m_name = "" ;
+        m_target = Ast.TLE_Target "" ;
+        m_datalayout = Ast.TLE_Datalayout "" ;
+        m_globals = [] ;
+        m_declarations = [] ;
+        m_definitions = [] ;
+      };
+      m_env = Local.empty }
 
   let init name (arch, vendor, os) data_layout =
     { m_module = {

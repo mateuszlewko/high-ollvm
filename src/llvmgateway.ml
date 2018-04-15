@@ -15,17 +15,32 @@ let env_of_mod ll_mod =
   let ctx = Llvm.global_context () in 
   create_env ctx ll_mod (Llvm.builder ctx)
 
-let lookup env id = List.assoc id env.mem
+let string_of_ident : Ast.ident -> string = function
+  | ID_Local i
+  | ID_Global i -> i
 
-let lookup_fn env (id : Ast.ident) : Llvm.llvalue = match id with
+let string_of_ident_raw : Ast.ident -> string = function
+  | ID_Local i  -> i ^ "_l"
+  | ID_Global i -> i ^ "_g"
+
+let (%>) f g = fun x -> g (f x)
+
+let print_mem env =
+  List.iter (fst %> string_of_ident_raw %> (Core.printf "got: %s\n")) env.mem
+
+let lookup env id = 
+  try List.assoc id env.mem
+  with e ->
+    Core.printf "not found: %s\n" (string_of_ident id);
+    print_mem env;
+    raise e
+
+let lookup_fn env (id : Ast.ident) : Llvm.llvalue = 
+  match id with
   | ID_Local _ -> assert false
   | ID_Global i -> match Llvm.lookup_function i env.m with
                    | Some fn -> fn
                    | _ -> assert false
-
-let string_of_ident : Ast.ident -> string = function
-  | ID_Local i
-  | ID_Global i -> i
 
 let label : env -> Ast.ident -> Llvm.llbasicblock =
   fun env id -> List.assoc (string_of_ident id) env.labels
@@ -359,13 +374,19 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
 
   | INSTR_Unreachable                   -> (env, build_unreachable env.b)
 
-  | INSTR_Assign (id, inst)             ->
-     let (env, llv) = instr env inst in
-     ({ env with mem = (id, llv) :: env.mem }, llv)
-
-  | INSTR_Bitcast ((t, v), ty)               -> 
+  | INSTR_Bitcast ((t, v), ty)          ->
     let llv = value env t v in 
     env, build_bitcast llv (ll_type env ty) "" env.b
+
+  | INSTR_Assign (id, inst)             ->
+    (* Core.printf "assign: %s\n" (string_of_ident id); *)
+     let (env, llv) = instr env inst in
+     let env = { env with mem = (id, llv)::env.mem } in
+     (* print_string "curr:\n";
+     print_mem env;
+     print_string "-----\n";
+     flush_all (); *)
+     env, llv
 
 let global : env -> Ast.global -> env =
   fun env g ->
@@ -402,7 +423,13 @@ let definition : env -> Ast.definition -> env =
   let (env, fn) = declaration env df.df_prototype in
   (* Do not allow function redefinition. May change? *)
   if Array.length (Llvm.basic_blocks fn) <> 0
-  then assert false;
+  then (
+    Core.printf "possibly function redefinition: %s\n" (string_of_ident_raw df.df_prototype.dc_name);
+    flush_all ();
+    assert false (* env *)
+  )
+  else begin
+
   let env =
     lookup_fn env df.df_prototype.dc_name
     |> Llvm.params
@@ -415,12 +442,12 @@ let definition : env -> Ast.definition -> env =
   let env =
     List.fold_left (fun env b -> create_block env b fn) env df.df_instrs in
   List.fold_left (fun env bl -> block env bl) env (df.df_instrs)
-
-let modul : Ast.modul -> env =
+  end
+let ll_module : Ast.modul -> env =
   fun modul ->
   let c = Llvm.global_context () in
   let m = Llvm.create_module c modul.m_name in
-  let b = Llvm.builder c in
+  let b = Llvm.builder c in 
   let Ast.TLE_Target target = modul.m_target in
   let Ast.TLE_Datalayout datalayout = modul.m_datalayout in
   Llvm.set_target_triple target m;
@@ -433,4 +460,22 @@ let modul : Ast.modul -> env =
   let env = List.fold_left (fun env df -> definition {env with mem=[];
                                                                labels=[]} df)
                            env (List.map snd modul.m_definitions) in
+  { env with mem = [] ; labels = [] }
+
+let ll_module_in ll_mod md = 
+  let c = Llvm.global_context () in
+  let m = ll_mod in
+  let b = Llvm.builder c in 
+  let Ast.TLE_Target target = md.m_target in
+  let Ast.TLE_Datalayout datalayout = md.m_datalayout in
+  Llvm.set_target_triple target m;
+  Llvm.set_data_layout datalayout m;
+  let env = { c = c; m = m; b = b; mem = []; labels = [] } in
+  let env = List.fold_left (fun env g -> global {env with mem=[]} g)
+                           env (List.map snd md.m_globals) in
+  let env = List.fold_left (fun env dc -> fst (declaration {env with mem=[]} dc))
+                           env (List.map snd md.m_declarations) in
+  let env = List.fold_left (fun env df -> definition {env with mem=[];
+                                                               labels=[]} df)
+                           env (List.map snd md.m_definitions) in
   { env with mem = [] ; labels = [] }

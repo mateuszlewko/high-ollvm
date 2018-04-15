@@ -12,14 +12,15 @@ module Type : sig
   val i32       : t
   val float     : t
   val double    : t
-  val fn        : t      -> t list -> t
-  val pointer   : t      -> t
-  val ptr       : t      -> t
-  val vector    : int    -> t -> t
+  val fn        : t   -> t list -> t
+  val pointer   : t   -> t
+  val ptr       : t   -> t
+  val vector    : int -> t -> t
   val label     : t
   val void      : t
-  val array     : int    -> t -> t
-  val structure : t list -> t
+  val opaque    : t
+  val array     : int -> t -> t
+  val structure : ?packed:bool -> t list -> t
 
 end
 
@@ -81,6 +82,8 @@ module Instr : sig
   val get_elem_ptr : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
   val struct_gep   : Ast.tvalue -> int      -> Ast.raw_type * Ast.instr
   val gep          : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
+  
+  val bitcast      : Ast.tvalue -> Ast.raw_type -> Ast.raw_type * Ast.instr
 
   (** Int comparison. *)
   val eq  : Value.t -> Value.t -> t
@@ -199,7 +202,7 @@ module Instr : sig
   val ( <-- ) : Value.t -> t -> Ast.instr
 
   (** Converts a [t] into a [ollvm] instr. *)
-  val ignore : t -> Ast.instr
+  (* val ignore : t -> Ast.instr *)
 
 end
 
@@ -242,6 +245,8 @@ module Module : sig
     m_module: Ast.modul;
     m_env: Local.t;
   }
+
+  val empty : t
 
   (** [init name (arch, vendor, os) data_layout] creates a fresh module with
       name, target triple and data layout set with given parameters and
