@@ -379,13 +379,8 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
     env, build_bitcast llv (ll_type env ty) "" env.b
 
   | INSTR_Assign (id, inst)             ->
-    (* Core.printf "assign: %s\n" (string_of_ident id); *)
      let (env, llv) = instr env inst in
      let env = { env with mem = (id, llv)::env.mem } in
-     (* print_string "curr:\n";
-     print_mem env;
-     print_string "-----\n";
-     flush_all (); *)
      env, llv
 
 let global : env -> Ast.global -> env =
