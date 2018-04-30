@@ -166,6 +166,7 @@ and value =
   | VALUE_Array of tvalue list
   | VALUE_Vector of tvalue list
   | VALUE_Zero_initializer
+  [@@deriving show]
 
  and instr =
   | INSTR_IBinop of ibinop * raw_type * value * value
@@ -191,6 +192,7 @@ and value =
   | INSTR_AtomicCmpXchg
   | INSTR_AtomicRMW
   | INSTR_Bitcast of tvalue * raw_type
+  | INSTR_Memcpy of tvalue * tvalue * tvalue * bool
 
   (* Terminators *)
   | INSTR_Invoke of tident * tvalue list * tident * tident

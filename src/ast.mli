@@ -150,6 +150,7 @@ and value =
   | VALUE_Array of tvalue list
   | VALUE_Vector of tvalue list
   | VALUE_Zero_initializer
+  [@@deriving show]
 and instr =
     INSTR_IBinop of ibinop * raw_type * value * value
   | INSTR_ICmp of icmp * raw_type * value * value
@@ -174,6 +175,7 @@ and instr =
   | INSTR_AtomicCmpXchg
   | INSTR_AtomicRMW
   | INSTR_Bitcast of tvalue * raw_type
+  | INSTR_Memcpy of tvalue * tvalue * tvalue * bool
   | INSTR_Invoke of tident * tvalue list * tident * tident
   | INSTR_Ret of tvalue
   | INSTR_Ret_void

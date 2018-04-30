@@ -35,15 +35,17 @@ module Value : sig
      Be careful about module inclusion/opening order
      when using both Value and Type modules. *)
 
-  val i1 : int -> t
-  val i8 : int -> t
-  val i32 : int -> t
-  val float : float -> t
-  val double : float -> t
-  val vector : t list -> t
-  val array : t list -> t
+  val i1        : int    -> t
+  val i8        : int    -> t
+  val i32       : int    -> t
+  val float     : float  -> t
+  val double    : float  -> t
+  val vector    : t list -> t
+  val array     : t list -> t
   val structure : t list -> t
-  val ident : t -> Type.t * Ast.ident
+  val ident     : t      -> Type.t * Ast.ident
+  (** Size in bytes of a given value *)
+  val bs_size   : t      -> int 
 
 end
 
@@ -80,10 +82,14 @@ module Instr : sig
 
   (** Get element pointer from aggregate.  *)
   val get_elem_ptr : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
+  val get_elem_ptr_raw : Ast.tvalue -> Ast.tvalue list -> Ast.raw_type * Ast.instr
   val struct_gep   : Ast.tvalue -> int      -> Ast.raw_type * Ast.instr
   val gep          : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
   
   val bitcast      : Ast.tvalue -> Ast.raw_type -> Ast.raw_type * Ast.instr
+  val memcpy       : ?volatile:bool -> High_ollvm__.Ast.tvalue ->
+                     High_ollvm__.Ast.tvalue -> High_ollvm__.Ast.tvalue ->
+                     High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
 
   (** Int comparison. *)
   val eq  : Value.t -> Value.t -> t
@@ -286,6 +292,9 @@ module Module : sig
       resulting in the global variable [g] of name [name] and type [t]
       declaration. *)
   val global : t -> Type.t -> string -> (t * Value.t)
+  
+  val global_val : t -> (Ast.raw_type * Ast.value) -> ?const:bool -> string 
+                     -> (t * Value.t)
 
   (** [declaration m dc] returns [m'], which is the same module than [m],
       with [dc] declaration registered. *)

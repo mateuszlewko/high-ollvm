@@ -48,6 +48,17 @@ module Value = struct
 
   let ident (t, Ast.VALUE_Ident id) = (t, id)
 
+  let bs_size (t, _) =
+    let open Ast in 
+    let open Core in 
+    match t with 
+    | TYPE_I x when x <= 8 -> 1
+    | TYPE_I 32            -> 4
+    | TYPE_Pointer _       -> 8
+    | other                -> failwith (sprintf "size of %s not supported" 
+                                        (show_raw_type other))
+
+
 end
 
 module Instr = struct
@@ -84,6 +95,9 @@ module Instr = struct
   let get_elem_ptr v ixs = 
     Type.ptr Type.void, Ast.INSTR_GetElementPtr (v, List.map Value.i32 ixs)
   
+  let get_elem_ptr_raw v ixs = 
+    Type.ptr Type.void, Ast.INSTR_GetElementPtr (v, ixs)
+  
   let struct_gep s ix = get_elem_ptr s [0; ix]
 
   (* let struct_gep_load s ix = 
@@ -92,6 +106,9 @@ module Instr = struct
     ptr::[load ptr] *)
 
   let bitcast v ty = ty, Ast.INSTR_Bitcast (v, ty)
+
+  let memcpy ?(volatile=false) from_ptr to_ptr len = 
+    Type.void, Ast.INSTR_Memcpy (from_ptr, to_ptr, len, volatile)
 
   let gep = get_elem_ptr
 
@@ -307,6 +324,7 @@ module Module = struct
 
   let local m t name =
     let (env, var) = Local.local m.m_env t name in
+
     ({m with m_env = env}, var)
 
   let locals m t list =
@@ -326,6 +344,33 @@ module Module = struct
   let global m t name =
     let ident = Ast.ID_Global name in
     let var = (t, Ast.VALUE_Ident ident) in
+    (m, var)
+
+  let simple_global ident t value const = 
+    let open Ast in 
+    { g_ident = ident;
+      g_typ= t;
+      g_constant= const;
+      g_value= Some value;
+    
+      g_linkage = None;
+      g_visibility = None;
+      g_dll_storage = None;
+      g_thread_local = None;
+      g_unnamed_addr= false;
+      g_addrspace = None;
+      g_externally_initialized = false;
+      g_section = None;
+      g_align = None; }
+
+  let global_val m (t, value) ?(const=false) name =
+    let ident = Ast.ID_Global name in
+    let var   = (t, Ast.VALUE_Ident ident) in
+    let g     = simple_global ident t value const in
+    (* TODO: make name unique in globals *)
+    let m     = { m with m_module = 
+                  { m.m_module with m_globals = 
+                    (name, g)::m.m_module.m_globals } } in
     (m, var)
 
   let lookup_declaration m name =

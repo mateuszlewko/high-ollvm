@@ -255,7 +255,12 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
   | INSTR_GetElementPtr ((t, v), tvl)       ->
      let indices = List.map (fun (t,v) -> value env t v) tvl
                    |> Array.of_list in
-     (env, build_gep (value env t v) indices "" env.b)
+     let open Core in 
+     let llv = value env t v in
+     printf "gep of: %s, llv is: %s\n" (show_value v) (string_of_llvalue llv);
+
+     Out_channel.flush Core.stdout;
+     (env, build_gep llv indices "" env.b)
 
   | INSTR_ExtractElement ((ty, vec), (ty', idx))      ->
      let vec = value env ty vec in
@@ -384,13 +389,29 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
      let (env, llv) = instr env inst in
      let env = { env with mem = (id, llv)::env.mem } in
      env, llv
+  | INSTR_Memcpy ((from_t, from_ptr), (to_t, to_ptr), (len_t, len), volatile) -> 
+      let i8_ptr   = i8_type %> pointer_type in
+      let memcpy_t = [|i8_ptr; i8_ptr; i32_type; i1_type|]
+                      |> Array.map ((|>) env.c)
+                      |> function_type (void_type env.c) in
+
+      let memcpy   = 
+        declare_function "llvm.memcpy.p0i8.p0i8.i32" memcpy_t env.m in
+      let volatile = const_int (i1_type env.c) (if volatile then 1 else 0) in
+      let from_llv = value env from_t from_ptr in
+      let to_llv   = value env to_t to_ptr in
+      let len_llv  = value env len_t len in 
+
+      env, build_call memcpy [|to_llv; from_llv; len_llv; volatile|] "" env.b 
 
 let global : env -> Ast.global -> env =
   fun env g ->
-  let llv = value env g.g_typ (match g.g_value with Some x -> x
-                                                  | None -> assert false) in
-  let Ast.ID_Global name = g.g_ident in
-  let llv = Llvm.define_global name llv env.m in
+  let v        = Core.Option.value_exn g.g_value in 
+  let llv_init = value env g.g_typ v in
+  let name     = string_of_ident g.g_ident in
+  let llv      = Llvm.define_global name llv_init env.m in
+
+  Llvm.set_global_constant g.g_constant llv; 
   {env with mem = (g.g_ident, llv) :: env.mem }
 
 let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
