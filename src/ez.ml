@@ -169,11 +169,26 @@ module Instr = struct
 
   let convert op (t, v) t' = (t', Ast.INSTR_Conversion(op, t, v, t'))
 
-  let trunc = convert Ast.Trunc let zext = convert Ast.Zext
-  let sext = convert Ast.Sext let fptrunc = convert Ast.Fptrunc
-  let fpext = convert Ast.Fpext let fptoui = convert Ast.Fptoui
-  let fptosi = convert Ast.Fptosi let uitofp = convert Ast.Uitofp
+  let trunc = convert Ast.Trunc 
+  
+  let zext = convert Ast.Zext
+  
+  let sext = convert Ast.Sext 
+  
+  let fptrunc = convert Ast.Fptrunc
+  
+  let fpext = convert Ast.Fpext 
+  
+  let fptoui = convert Ast.Fptoui
+  
+  let fptosi = convert Ast.Fptosi 
+  
+  let uitofp = convert Ast.Uitofp
+  
   let sitofp = convert Ast.Sitofp
+
+  let i2ptr = convert Ast.Inttoptr
+  let ptr2i = convert Ast.Ptrtoint
 
   let extractvalue agg idx =
     (fst agg, Ast.INSTR_ExtractValue (agg, idx))

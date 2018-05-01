@@ -166,6 +166,9 @@ module Instr : sig
   val fptosi  : Value.t -> Type.t -> t
   val uitofp  : Value.t -> Type.t -> t
   val sitofp  : Value.t -> Type.t -> t
+  
+  val i2ptr : Value.t -> Type.t -> t
+  val ptr2i : Value.t -> Type.t -> t
 
   (** [extractvalue agg idx_list] *)
   val extractvalue : Value.t -> int list -> t

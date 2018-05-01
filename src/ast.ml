@@ -146,8 +146,8 @@ and fbinop = FAdd|FSub|FMul|FDiv|FRem
 
 and fast_math = Nnan | Ninf | Nsz | Arcp | Fast
 
-and conversion_type = Trunc|Zext|Sext|Fptrunc|Fpext|Uitofp|Sitofp|Fptoui
-                       |Fptosi|Inttoptr|Ptrtoint|Bitcast
+and conversion_type = | Trunc | Zext | Sext | Fptrunc | Fpext | Uitofp | Sitofp
+                      | Fptoui | Fptosi | Inttoptr | Ptrtoint | Bitcast
 
 and tvalue = raw_type * value
 
@@ -193,6 +193,7 @@ and value =
   | INSTR_AtomicRMW
   | INSTR_Bitcast of tvalue * raw_type
   | INSTR_Memcpy of tvalue * tvalue * tvalue * bool
+
 
   (* Terminators *)
   | INSTR_Invoke of tident * tvalue list * tident * tident

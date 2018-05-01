@@ -195,7 +195,7 @@ let conversion_type : Ast.conversion_type ->
   | Ptrtoint -> const_ptrtoint
   | Bitcast  -> const_bitcast
 
-(** FIXME: should be splitted into const/value? *)
+(** FIXME: should be split into const/value? *)
 let rec value : env -> Ast.raw_type -> Ast.value -> Llvm.llvalue =
   fun env ty ->
   let open Llvm
@@ -401,7 +401,7 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
       let from_llv = value env from_t from_ptr in
       let to_llv   = value env to_t to_ptr in
       let len_llv  = value env len_t len in 
-
+      
       env, build_call memcpy [|to_llv; from_llv; len_llv; volatile|] "" env.b 
 
 let global : env -> Ast.global -> env =
