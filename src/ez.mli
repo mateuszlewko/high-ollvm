@@ -91,6 +91,11 @@ module Instr : sig
                      High_ollvm__.Ast.tvalue -> High_ollvm__.Ast.tvalue ->
                      High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
 
+  val malloc : High_ollvm__.Ast.raw_type ->
+               High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
+
+  val malloc_raw : Value.t -> High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
+
   (** Int comparison. *)
   val eq  : Value.t -> Value.t -> t
   val eq  : Value.t -> Value.t -> t

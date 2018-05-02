@@ -48,7 +48,7 @@ module Value = struct
 
   let ident (t, Ast.VALUE_Ident id) = (t, id)
 
-  let bs_size (t, _) =
+  let bs_size_of t =
     let open Ast in 
     let open Core in 
     match t with 
@@ -58,6 +58,7 @@ module Value = struct
     | other                -> failwith (sprintf "size of %s not supported" 
                                         (show_raw_type other))
 
+  let bs_size (t, _) = bs_size_of t
 
 end
 
@@ -110,13 +111,26 @@ module Instr = struct
   let memcpy ?(volatile=false) from_ptr to_ptr len = 
     Type.void, Ast.INSTR_Memcpy (from_ptr, to_ptr, len, volatile)
 
+  let malloc raw_type = 
+    let id = Ast.ID_Local "__last" in 
+    let i  = Ast.INSTR_Assign (id, Ast.INSTR_Malloc raw_type) in
+    let id = Type.opaque, Ast.VALUE_Ident id in
+    Type.ptr raw_type, Ast.INSTR_Bitcast (id, raw_type)
+
+  let malloc_raw v = Type.ptr Type.i8, Ast.INSTR_MallocRaw v
+
   let gep = get_elem_ptr
 
-  let eq = icmp Ast.Eq let ne = icmp Ast.Ne
-  let ugt = icmp Ast.Ugt let uge = icmp Ast.Uge
-  let ult = icmp Ast.Ult let ule = icmp Ast.Ule
-  let sgt = icmp Ast.Sgt let sge = icmp Ast.Sge
-  let slt = icmp Ast.Slt let sle = icmp Ast.Sle
+  let eq = icmp Ast.Eq  
+  let ne = icmp Ast.Ne
+  let ugt = icmp Ast.Ugt
+   let uge = icmp Ast.Uge
+  let ult = icmp Ast.Ult
+   let ule = icmp Ast.Ule
+  let sgt = icmp Ast.Sgt
+   let sge = icmp Ast.Sge
+  let slt = icmp Ast.Slt
+   let sle = icmp Ast.Sle
 
   let fcmp cmp (t, op1) (_, op2) =
     (Type.i1, Ast.INSTR_FCmp (cmp, t, op1, op2))

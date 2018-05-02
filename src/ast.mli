@@ -176,6 +176,8 @@ and instr =
   | INSTR_AtomicRMW
   | INSTR_Bitcast of tvalue * raw_type
   | INSTR_Memcpy of tvalue * tvalue * tvalue * bool
+  | INSTR_Malloc of raw_type
+  | INSTR_MallocRaw of tvalue
   | INSTR_Invoke of tident * tvalue list * tident * tident
   | INSTR_Ret of tvalue
   | INSTR_Ret_void

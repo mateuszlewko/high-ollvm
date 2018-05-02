@@ -403,7 +403,16 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
       let len_llv  = value env len_t len in 
       
       env, build_call memcpy [|to_llv; from_llv; len_llv; volatile|] "" env.b 
+  | INSTR_Malloc v -> env, build_malloc (ll_type env v) "" env.b
+  | INSTR_MallocRaw (tv, v) ->
+      let i8_ptr   = i8_type %> pointer_type in
+      let malloc_t = [|i32_type env.c|]
+                     |> function_type (i8_ptr env.c) in
 
+      let malloc   = declare_function "malloc" malloc_t env.m in
+      let len_llv  = value env (TYPE_I 32) v in 
+      env, build_call malloc [|len_llv|] "" env.b 
+  
 let global : env -> Ast.global -> env =
   fun env g ->
   let v        = Core.Option.value_exn g.g_value in 
