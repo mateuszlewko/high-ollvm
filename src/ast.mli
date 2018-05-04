@@ -167,6 +167,7 @@ and value =
   | VALUE_Array of tvalue list
   | VALUE_Vector of tvalue list
   | VALUE_Zero_initializer
+  | JustInstr of instr
   [@@deriving show]
 
 and instr =
@@ -206,6 +207,7 @@ and instr =
   | INSTR_Resume of tvalue
   | INSTR_Unreachable
   | INSTR_Assign of ident * instr
+  (* | JustValue of value *)
   [@@deriving show]
 
 and toplevelentry =
