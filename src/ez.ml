@@ -3,20 +3,23 @@ module Type = struct
   open Ast
 
   type t = Ast.raw_type
+  [@@deriving show]
 
-  let i1 = TYPE_I 1
-  let i8 = TYPE_I 8
-  let i32 = TYPE_I 32
-  let float = TYPE_Float
-  let double = TYPE_Double
+
+  let i1              = TYPE_I 1
+  let i8              = TYPE_I 8
+  let i32             = TYPE_I 32
+  let float           = TYPE_Float
+  let double          = TYPE_Double
   let fn ret_t arg_ts = TYPE_Function (ret_t, arg_ts)
-  let pointer t = TYPE_Pointer t
-  let ptr t = TYPE_Pointer t
-  let vector n t = TYPE_Vector (n, t)
-  let label = TYPE_Label
-  let void = TYPE_Void
-  let opaque = TYPE_Opaque
-  let array n t = TYPE_Array (n, t)
+  let pointer t       = TYPE_Pointer t
+  let ptr t           = TYPE_Pointer t
+  let vector n t      = TYPE_Vector (n, t)
+  let label           = TYPE_Label
+  let void            = TYPE_Void
+  let opaque          = TYPE_Opaque
+  let array n t       = TYPE_Array (n, t)
+  
   let structure ?(packed=false) s = if packed
                                     then TYPE_Packed_struct s
                                     else TYPE_Struct s
@@ -25,6 +28,8 @@ end
 module Value = struct
 
   type t = Type.t * Ast.value
+  [@@deriving show]
+
 
   let i1 n = (Type.i1, Ast.VALUE_Integer n)
 
@@ -294,7 +299,8 @@ module Module = struct
   module Local = struct
 
     type t = { unnamed_counter : int;
-               named_counter : (string * int) list }
+               named_counter : (string * int) list } 
+               [@@deriving show]
 
     let empty = { unnamed_counter = 0 ;
                   named_counter = [] }
@@ -325,7 +331,7 @@ module Module = struct
   type t = {
     m_module: Ast.modul;
     m_env: Local.t;
-  }
+  } [@@deriving show]
 
   let empty = 
     { m_module = {

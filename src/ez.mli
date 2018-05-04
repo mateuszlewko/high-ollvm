@@ -6,6 +6,7 @@ module Type : sig
   open Ast
 
   type t = Ast.raw_type
+  [@@deriving show]
 
   val i1        : t
   val i8        : t
@@ -29,6 +30,7 @@ module Value : sig
 
   (** [ollvm] value annotated with type its. *)
   type t = Type.t * Ast.value
+  [@@deriving show]
 
  (** Values constructors.
      Do not confound with types in Type module.
@@ -246,6 +248,8 @@ module Module : sig
   module Local :  sig
     (** Abstract type of the environment *)
     type t
+    [@@deriving show]
+
 
     (** Create a local identifier (returned as a value). If a local
         variable already use [name] as identifier, it will be suffixed
@@ -259,7 +263,7 @@ module Module : sig
   type t = {
     m_module: Ast.modul;
     m_env: Local.t;
-  }
+  } [@@deriving show]
 
   val empty : t
 
