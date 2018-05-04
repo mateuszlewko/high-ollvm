@@ -258,6 +258,7 @@ let rec instr : env -> Ast.instr -> (env * Llvm.llvalue) =
      let open Core in 
      let llv = value env t v in
      printf "gep of: %s, llv is: %s\n" (show_value v) (string_of_llvalue llv);
+     printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
 
      Out_channel.flush Core.stdout;
      (env, build_gep llv indices "" env.b)

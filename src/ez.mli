@@ -44,6 +44,8 @@ module Value : sig
   val array     : t list -> t
   val structure : t list -> t
   val ident     : t      -> Type.t * Ast.ident
+  val null      : t
+
   (** Size in bytes of a given value *)
   val bs_size   : t      -> int 
 
@@ -81,20 +83,17 @@ module Instr : sig
   val store : ?volatile:bool -> ?align:int option -> Value.t -> Value.t -> t
 
   (** Get element pointer from aggregate.  *)
-  val get_elem_ptr : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
-  val get_elem_ptr_raw : Ast.tvalue -> Ast.tvalue list -> Ast.raw_type * Ast.instr
-  val struct_gep   : Ast.tvalue -> int      -> Ast.raw_type * Ast.instr
-  val gep          : Ast.tvalue -> int list -> Ast.raw_type * Ast.instr
+  val get_elem_ptr     : Value.t -> int list -> t
+  val get_elem_ptr_raw : Value.t -> Value.t list -> t
+  val struct_gep       : Value.t -> int      -> t
+  val gep              : Value.t -> int list -> t
   
-  val bitcast      : Ast.tvalue -> Ast.raw_type -> Ast.raw_type * Ast.instr
-  val memcpy       : ?volatile:bool -> High_ollvm__.Ast.tvalue ->
-                     High_ollvm__.Ast.tvalue -> High_ollvm__.Ast.tvalue ->
-                     High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
+  val bitcast : Value.t -> Ast.raw_type -> t
+  val memcpy  : ?volatile:bool -> Value.t ->  Value.t -> Value.t -> t
 
-  val malloc : High_ollvm__.Ast.raw_type ->
-               High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
+  val malloc : High_ollvm__.Ast.raw_type -> t
 
-  val malloc_raw : Value.t -> High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr
+  val malloc_raw : Value.t -> t
 
   (** Int comparison. *)
   val eq  : Value.t -> Value.t -> t

@@ -48,6 +48,8 @@ module Value = struct
 
   let ident (t, Ast.VALUE_Ident id) = (t, id)
 
+  let null = Type.opaque, Ast.VALUE_Null
+
   let bs_size_of t =
     let open Ast in 
     let open Core in 
@@ -112,37 +114,44 @@ module Instr = struct
     Type.void, Ast.INSTR_Memcpy (from_ptr, to_ptr, len, volatile)
 
   let malloc raw_type = 
-    let id = Ast.ID_Local "__last" in 
+    (* let id = Ast.ID_Local "__last" in 
     let i  = Ast.INSTR_Assign (id, Ast.INSTR_Malloc raw_type) in
-    let id = Type.opaque, Ast.VALUE_Ident id in
-    Type.ptr raw_type, Ast.INSTR_Bitcast (id, raw_type)
+    let id = Type.opaque, Ast.VALUE_Ident id in *)
+    Type.ptr raw_type, Ast.INSTR_Malloc raw_type
 
   let malloc_raw v = Type.ptr Type.i8, Ast.INSTR_MallocRaw v
-
+  
   let gep = get_elem_ptr
 
-  let eq = icmp Ast.Eq  
-  let ne = icmp Ast.Ne
+  let eq  = icmp Ast.Eq  
+  let ne  = icmp Ast.Ne
   let ugt = icmp Ast.Ugt
-   let uge = icmp Ast.Uge
+  let uge = icmp Ast.Uge
   let ult = icmp Ast.Ult
-   let ule = icmp Ast.Ule
+  let ule = icmp Ast.Ule
   let sgt = icmp Ast.Sgt
-   let sge = icmp Ast.Sge
+  let sge = icmp Ast.Sge
   let slt = icmp Ast.Slt
-   let sle = icmp Ast.Sle
+  let sle = icmp Ast.Sle
 
-  let fcmp cmp (t, op1) (_, op2) =
-    (Type.i1, Ast.INSTR_FCmp (cmp, t, op1, op2))
+  let fcmp cmp (t, op1) (_, op2) = Type.i1, Ast.INSTR_FCmp (cmp, t, op1, op2)
 
-  let ffalse = fcmp Ast.False let foeq = fcmp Ast.Oeq
-  let fogt = fcmp Ast.Ogt let foge = fcmp Ast.Oge
-  let folt = fcmp Ast.Olt let fole = fcmp Ast.Ole
-  let fone = fcmp Ast.One let ord = fcmp Ast.Ord
-  let fueq = fcmp Ast.Ueq let fugt = fcmp Ast.Ugt
-  let fuge = fcmp Ast.Uge let fult = fcmp Ast.Ult
-  let fule = fcmp Ast.Ule let fune = fcmp Ast.Une
-  let funo = fcmp Ast.Uno let ftrue = fcmp Ast.True
+  let ffalse = fcmp Ast.False 
+  let foeq   = fcmp Ast.Oeq
+  let fogt   = fcmp Ast.Ogt 
+  let foge   = fcmp Ast.Oge
+  let folt   = fcmp Ast.Olt 
+  let fole   = fcmp Ast.Ole
+  let fone   = fcmp Ast.One 
+  let ord    = fcmp Ast.Ord
+  let fueq   = fcmp Ast.Ueq 
+  let fugt   = fcmp Ast.Ugt
+  let fuge   = fcmp Ast.Uge 
+  let fult   = fcmp Ast.Ult
+  let fule   = fcmp Ast.Ule 
+  let fune   = fcmp Ast.Une
+  let funo   = fcmp Ast.Uno 
+  let ftrue  = fcmp Ast.True
 
   let ibinop b (t, op1) (_, op2) =
     (t, Ast.INSTR_IBinop (b, t, op1, op2))
@@ -377,20 +386,20 @@ module Module = struct
 
   let simple_global ident t value const = 
     let open Ast in 
-    { g_ident = ident;
-      g_typ= t;
-      g_constant= const;
-      g_value= Some value;
-    
-      g_linkage = None;
-      g_visibility = None;
-      g_dll_storage = None;
-      g_thread_local = None;
-      g_unnamed_addr= false;
-      g_addrspace = None;
-      g_externally_initialized = false;
-      g_section = None;
-      g_align = None; }
+    { g_ident    = ident
+    ; g_typ      = t
+    ; g_constant = const
+    ; g_value    = Some value
+  
+    ; g_linkage                = None
+    ; g_visibility             = None
+    ; g_dll_storage            = None
+    ; g_thread_local           = None
+    ; g_unnamed_addr           = false
+    ; g_addrspace              = None
+    ; g_externally_initialized = false
+    ; g_section                = None
+    ; g_align                  = None }
 
   let global_val m (t, value) ?(const=false) name =
     let ident = Ast.ID_Global name in
