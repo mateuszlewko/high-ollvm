@@ -1,7 +1,9 @@
 (jbuild_version 1)
 
 (library
- ((name    high_ollvm)
+ ((name high_ollvm)
+  (modules_without_implementation (ast))
   (public_name high_ollvm)
-  (preprocess (pps (ppx_deriving.std ppx_enumerate)))
+  (preprocess (pps (ppx_deriving.std 
+                    ppx_enumerate)))
   (libraries (core llvm))))
