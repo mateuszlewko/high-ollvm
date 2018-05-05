@@ -437,5 +437,11 @@ module Module = struct
                                            :: m.m_module.m_declarations ;
                           m_definitions = (name, df)
                                           :: m.m_module.m_definitions } }
+  let fn m name ret_t args blocks = 
+    let m, fn   = global m ret_t name in
+    let m, args = batch_locals m args in 
+    let fn_impl = Block.define fn args blocks in
+    let m       = definition m fn_impl in 
+    m, fn
 
 end
