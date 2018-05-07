@@ -287,6 +287,9 @@ module Module : sig
       it will be used as identifier (possibly with a number added
       as suffix), a number will be automatically assigned otherwise. *)
   val local : t -> Type.t -> string -> t * Value.t
+  
+  (** same as [local m Type.opaque ""] *)
+  val tmp : t -> t * Value.t
 
   (** [locals m t names] return [(m', values)] where [m'] is the new
       module with new local identifiers declared and [values] is

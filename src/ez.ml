@@ -371,6 +371,8 @@ module Module = struct
 
     ({m with m_env = env}, var)
 
+  let tmp m = local m Type.opaque "" 
+
   let locals m t list =
     let rec loop m acc = function
       | []     -> (m, List.rev acc)
