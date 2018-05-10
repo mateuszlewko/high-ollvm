@@ -4,8 +4,10 @@ type env = { c : Llvm.llcontext;
              m : Llvm.llmodule;
              b : Llvm.llbuilder;
 
+            (* TODO: Change to map *)
              globals : (string * Llvm.llvalue) list;
 
+            (* TODO: Change to map *)
              (* llvalue/llbasicblock binded to Ast.ident*)
              mem    : (Ast.ident * Llvm.llvalue) list;
              labels : (string * Llvm.llbasicblock) list }
