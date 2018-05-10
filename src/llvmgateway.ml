@@ -127,7 +127,7 @@ let rec ll_type : env -> Ast.raw_type -> Llvm.lltype =
      struct_type ctx (Array.of_list s |> Array.map (ll_type env))
   | TYPE_Packed_struct s   ->
      packed_struct_type ctx (Array.of_list s |> Array.map (ll_type env))
-  | TYPE_Opaque            -> assert false
+  | TYPE_Opaque            -> void_type ctx
   | TYPE_Vector (i, t)     -> vector_type (ll_type env t) i
 
 let icmp : Ast.icmp -> Llvm.Icmp.t =
