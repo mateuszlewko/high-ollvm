@@ -4,12 +4,14 @@ type env = { c : Llvm.llcontext;
              m : Llvm.llmodule;
              b : Llvm.llbuilder;
 
+             globals : (string * Llvm.llvalue) list;
+
              (* llvalue/llbasicblock binded to Ast.ident*)
              mem    : (Ast.ident * Llvm.llvalue) list;
              labels : (string * Llvm.llbasicblock) list }
 
-let create_env ctx ll_mod bd = { c = ctx; m = ll_mod; b = bd; mem = []
-                               ; labels = [] }
+let create_env ctx ll_mod bd = { c = ctx; m = ll_mod; b = bd; mem = [];
+                                 globals = []; labels = [] }
 
 let (>>*) m f = f m; m
 
@@ -32,13 +34,18 @@ let print_mem env =
 let lookup env id = 
   try List.assoc id env.mem
   with e ->
-    Core.printf "not found: %s\n" (string_of_ident id);
-    print_mem env;
-    raise e
+    try List.assoc (string_of_ident id) env.globals 
+    with e -> 
+      Core.printf "not found: %s\n" (string_of_ident id);
+      print_mem env;
+      Core.Out_channel.flush Core.stdout;
+      raise e
 
 let lookup_fn env (id : Ast.ident) : Llvm.llvalue = 
   match id with
-  | ID_Local _  -> assert false
+  | ID_Local i  -> 
+    (* Core.sprintf "Assert local id: %s in lookup_fn" i |> failwith  *)
+    lookup env (ID_Local i)
   | ID_Global i -> 
     match Llvm.lookup_function i env.m with
     | Some fn -> fn
@@ -269,14 +276,15 @@ and instr =
 
   | INSTR_GetElementPtr ((t, v), tvl)       ->
      let env, indices = values env tvl in 
-
+     (* show_tvalue  *)
      let open Core in 
      let env, llv = value env t v in
-     printf "gep of: %s, llv is: %s, indices: [%s], llv type: %s\n" 
+     printf "gep of: %s, llv is: %s, indices: [%s], llv type: %s, v: %s\n" 
       (show_value v) 
       (string_of_llvalue llv)
-      (type_of llv |> string_of_lltype) 
-      (Array.fold indices ~f:(fun a v -> a ^ "; " ^ string_of_llvalue v) ~init:"");
+      (Array.fold indices ~f:(fun a v -> a ^ "; " ^ string_of_llvalue v) ~init:"")
+      (type_of llv |> string_of_lltype)
+      (show_value v);
 
      printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
 
@@ -445,7 +453,10 @@ let global : env -> Ast.global -> env =
   let llv      = Llvm.define_global name llv_init env.m in
 
   Llvm.set_global_constant g.g_constant llv; 
-  {env with mem = (g.g_ident, llv) :: env.mem }
+  Core.printf "adding global: %s\n" (show_ident g.g_ident);
+
+  {env with mem = (g.g_ident, llv) :: env.mem;
+            globals = (string_of_ident g.g_ident, llv)::env.globals }
 
 let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
   fun env dc ->
@@ -505,7 +516,7 @@ let ll_module : Ast.modul -> env =
   let Ast.TLE_Datalayout datalayout = modul.m_datalayout in
   Llvm.set_target_triple target m;
   Llvm.set_data_layout datalayout m;
-  let env = { c = c; m = m; b = b; mem = []; labels = [] } in
+  let env = { c = c; m = m; b = b; mem = []; labels = []; globals = [] } in
   let env = List.fold_left (fun env g -> global {env with mem=[]} g)
                            env (List.map snd modul.m_globals) in
   let env = List.fold_left (fun env dc -> fst (declaration {env with mem=[]} dc))
@@ -523,7 +534,7 @@ let ll_module_in ll_mod md =
   let Ast.TLE_Datalayout datalayout = md.m_datalayout in
   Llvm.set_target_triple target m;
   Llvm.set_data_layout datalayout m;
-  let env = { c = c; m = m; b = b; mem = []; labels = [] } in
+  let env = { c = c; m = m; b = b; mem = []; labels = []; globals = [] } in
   let env = List.fold_left (fun env g -> global {env with mem=[]} g)
                            env (List.map snd md.m_globals) in
   let env = List.fold_left (fun env dc -> fst (declaration {env with mem=[]} dc))
