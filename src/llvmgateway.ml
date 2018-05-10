@@ -39,10 +39,16 @@ let lookup env id =
 
 let lookup_fn env (id : Ast.ident) : Llvm.llvalue = 
   match id with
-  | ID_Local _ -> assert false
-  | ID_Global i -> match Llvm.lookup_function i env.m with
-                   | Some fn -> fn
-                   | _ -> assert false
+  | ID_Local _  -> assert false
+  | ID_Global i -> 
+    match Llvm.lookup_function i env.m with
+    | Some fn -> fn
+    | _       -> 
+      let open Core in 
+      printf "ENV mem start\n";
+      env.mem |> List.iter ~f:(fst %> show_ident %> printf "id: %s\n");
+      printf "---\n";
+      Core.sprintf "lookup_fn not found: %s" i |> failwith
 
 let label : env -> Ast.ident -> Llvm.llbasicblock =
   fun env id -> List.assoc (string_of_ident id) env.labels
@@ -444,7 +450,9 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
   fun env dc ->
   let name = (string_of_ident dc.dc_name) in
   let fn =  match Llvm.lookup_function name env.m with
-    | None -> Llvm.declare_function name (ll_type env dc.dc_type) env.m ;
+    | None    -> 
+      Core.printf "declaring function: %s\n" name;
+      Llvm.declare_function name (ll_type env dc.dc_type) env.m ;
     | Some fn -> fn in
   (env, fn)
 
@@ -505,7 +513,7 @@ let ll_module : Ast.modul -> env =
                                                                labels=[]} df)
                            env (List.map snd modul.m_definitions) in
   { env with mem = [] ; labels = [] }
-
+  
 let ll_module_in ll_mod md = 
   let c = Llvm.global_context () in
   let m = ll_mod in
