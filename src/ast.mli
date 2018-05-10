@@ -180,7 +180,7 @@ and instr =
   | INSTR_ExtractElement of tvalue * tvalue
   | INSTR_InsertElement of tvalue * tvalue * tvalue
   | INSTR_ShuffleVector of tvalue * tvalue * tvalue
-  | INSTR_ExtractValue of tvalue * int list
+  | INSTR_ExtractValue of tvalue * int
   | INSTR_InsertValue of tvalue * tvalue * int list
   | INSTR_Call of bool * tident * (tvalue list)
   | INSTR_Alloca of raw_type * tvalue option * int option

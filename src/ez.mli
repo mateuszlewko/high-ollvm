@@ -177,7 +177,7 @@ module Instr : sig
   val ptr2i : Value.t -> Type.t -> t
 
   (** [extractvalue agg idx_list] *)
-  val extractvalue : Value.t -> int list -> t
+  val extractvalue : Value.t -> int -> t
 
   (** [insertvalue agg val idx_list] *)
   val insertvalue : Value.t -> Value.t -> int list -> t

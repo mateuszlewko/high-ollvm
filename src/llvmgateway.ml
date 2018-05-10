@@ -17,9 +17,8 @@ let env_of_mod ll_mod =
   let ctx = Llvm.global_context () in 
   create_env ctx ll_mod (Llvm.builder ctx)
 
-let string_of_ident : Ast.ident -> string = function
-  | ID_Local i
-  | ID_Global i -> i
+let string_of_ident : Ast.ident -> string = 
+  function ID_Local i | ID_Global i -> i
 
 let string_of_ident_raw : Ast.ident -> string = function
   | ID_Local i  -> i ^ "_l"
@@ -234,8 +233,8 @@ and values env vs =
                     env := e; v) in 
   !env, res  
 
-and instr : env -> Ast.instr -> env * Llvm.llvalue =
-  fun env ->
+and instr =
+  fun ?(res_name="") env ->
   let open Llvm in
   function
 
@@ -273,7 +272,12 @@ and instr : env -> Ast.instr -> env * Llvm.llvalue =
 
      let open Core in 
      let env, llv = value env t v in
-     printf "gep of: %s, llv is: %s\n" (show_value v) (string_of_llvalue llv);
+     printf "gep of: %s, llv is: %s, indices: [%s], llv type: %s\n" 
+      (show_value v) 
+      (string_of_llvalue llv)
+      (type_of llv |> string_of_lltype) 
+      (Array.fold indices ~f:(fun a v -> a ^ "; " ^ string_of_llvalue v) ~init:"");
+
      printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
 
      Out_channel.flush Core.stdout;
@@ -297,12 +301,8 @@ and instr : env -> Ast.instr -> env * Llvm.llvalue =
      (env, build_shufflevector v v' v'' "" env.b)
 
   | INSTR_ExtractValue ((t, v), idx)         ->
-     (* FIXME: llvm api take an int and not a list... *)
-     begin match idx with
-     | [ idx ] ->
-        let env, v = value env t v in
-        (env, build_extractvalue v idx "" env.b)
-     | _ -> assert false end
+     let env, v = value env t v in
+     env, build_extractvalue v idx "" env.b
 
   | INSTR_InsertValue ((t, vec), (t', el), idx)    ->
      (* FIXME: llvm api take an int and not a list... *)
@@ -316,7 +316,7 @@ and instr : env -> Ast.instr -> env * Llvm.llvalue =
   | INSTR_Call (tail, (t, i), args)             ->
      let fn = lookup_fn env i in
      let env, args = values env args in
-     (env, build_call fn args "" env.b >>* set_tail_call tail)
+     (env, build_call fn args res_name env.b )
 
   | INSTR_Alloca (ty, nb, _)          -> 
        begin
@@ -408,7 +408,8 @@ and instr : env -> Ast.instr -> env * Llvm.llvalue =
     env, build_bitcast llv (ll_type env ty) "" env.b
 
   | INSTR_Assign (id, inst)             ->
-     let (env, llv) = instr env inst in
+     let res_name   = string_of_ident id in 
+     let (env, llv) = instr ~res_name env inst in
      let env = { env with mem = (id, llv)::env.mem } in
      env, llv
   | INSTR_Memcpy ((from_t, from_ptr), (to_t, to_ptr), (len_t, len), volatile) -> 
