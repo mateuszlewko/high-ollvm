@@ -424,7 +424,7 @@ and instr =
      env, llv
   | INSTR_Memcpy ((from_t, from_ptr), (to_t, to_ptr), (len_t, len), volatile) -> 
       let i8_ptr   = i8_type %> pointer_type in
-      let memcpy_t = [|i8_ptr; i8_ptr; i32_type; i1_type|]
+      let memcpy_t = [|i8_ptr; i8_ptr; i32_type; i32_type; i1_type|]
                       |> Array.map ((|>) env.c)
                       |> function_type (void_type env.c) in
 
@@ -435,7 +435,8 @@ and instr =
       let env, to_llv   = value env to_t to_ptr in
       let env, len_llv  = value env len_t len in 
       
-      env, build_call memcpy [|to_llv; from_llv; len_llv; volatile|] "" env.b 
+      env, build_call memcpy [|to_llv; from_llv; len_llv
+                             ; const_int (i32_type env.c) 8; volatile|] "" env.b 
   | INSTR_Malloc v -> env, build_malloc (ll_type env v) "" env.b
   | INSTR_MallocRaw (tv, v) ->
       let i8_ptr   = i8_type %> pointer_type in
