@@ -414,10 +414,11 @@ module Module = struct
     let var   = (t, Ast.VALUE_Ident ident) in
     let g     = simple_global ident t value const in
     (* TODO: make name unique in globals *)
-    let m     = { m with m_module = 
-                  { m.m_module with m_globals = 
-                    (name, g)::m.m_module.m_globals } } in
-    (m, var)
+    
+    let m_globals = m.m_module.m_globals @ [name, g] in
+    let m_module  = { m.m_module with m_globals } in
+    let m         = { m with m_module = m_module } in
+    m, var
 
   let lookup_declaration m name =
     List.assoc name m.m_module.m_declarations

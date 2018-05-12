@@ -31,17 +31,24 @@ let string_of_ident_raw : Ast.ident -> string = function
 let (%>) f g = fun x -> g (f x)
 
 let print_mem env =
-  List.iter (fst %> string_of_ident_raw %> (Core.printf "got: %s\n")) env.mem
+  List.iter (fst %> string_of_ident_raw %> (Core.printf "mem got: %s\n")) env.mem
+
+let print_globals env =
+  List.iter (fst %> (Core.printf "globals got: %s\n")) env.globals
 
 let lookup env id = 
   try List.assoc id env.mem
   with e ->
-    try List.assoc (string_of_ident id) env.globals 
-    with e -> 
+  try List.assoc (string_of_ident id) env.globals 
+  with e ->  
+    match Llvm.lookup_function (string_of_ident id) env.m with 
+    | None ->
       Core.printf "not found: %s\n" (string_of_ident id);
       print_mem env;
+      print_globals env;
       Core.Out_channel.flush Core.stdout;
       raise e
+    | Some f -> f
 
 let lookup_fn env (id : Ast.ident) : Llvm.llvalue = 
   match id with
@@ -469,7 +476,7 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
       Core.printf "declaring function: %s\n" name;
       Llvm.declare_function name (ll_type env dc.dc_type) env.m ;
     | Some fn -> fn in
-  (env, fn)
+  ({ env with globals = (name, fn)::env.globals }, fn)
 
 let create_block : env -> Ast.block -> Llvm.llvalue -> env =
   fun env b fn ->
@@ -510,7 +517,7 @@ let definition : env -> Ast.definition -> env =
     List.fold_left (fun env b -> create_block env b fn) env df.df_instrs in
   List.fold_left (fun env bl -> block env bl) env (df.df_instrs)
   end
-let ll_module : Ast.modul -> env =
+(* let ll_module : Ast.modul -> env =
   fun modul ->
   let c = Llvm.global_context () in
   let m = Llvm.create_module c modul.m_name in
@@ -527,7 +534,7 @@ let ll_module : Ast.modul -> env =
   let env = List.fold_left (fun env df -> definition {env with mem=[];
                                                                labels=[]} df)
                            env (List.map snd modul.m_definitions) in
-  { env with mem = [] ; labels = [] }
+  { env with mem = [] ; labels = [] } *)
   
 let ll_module_in ll_mod md = 
   let c = Llvm.global_context () in
@@ -538,11 +545,19 @@ let ll_module_in ll_mod md =
   Llvm.set_target_triple target m;
   Llvm.set_data_layout datalayout m;
   let env = { c = c; m = m; b = b; mem = []; labels = []; globals = [] } in
-  let env = List.fold_left (fun env g -> global {env with mem=[]} g)
-                           env (List.map snd md.m_globals) in
+ 
   let env = List.fold_left (fun env dc -> fst (declaration {env with mem=[]} dc))
                            env (List.map snd md.m_declarations) in
+ 
+  let env = List.fold_left (fun env g -> global {env with mem=[]} g)
+                           env (List.map snd md.m_globals) in
+ 
   let env = List.fold_left (fun env df -> definition {env with mem=[];
                                                                labels=[]} df)
                            env (List.map snd md.m_definitions) in
   { env with mem = [] ; labels = [] }
+
+let ll_module md = 
+  let c = Llvm.global_context () in
+  let ll_mod = Llvm.create_module c md.m_name in
+  ll_module_in ll_mod md 
