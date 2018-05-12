@@ -51,6 +51,7 @@ module Value : sig
   (** Size in bytes of a given value *)
   val bs_size   : t      -> int 
 
+  val (!%)      : High_ollvm__.Ast.raw_type * High_ollvm__.Ast.instr -> t
 end
 
 (** Instruction creation. *)

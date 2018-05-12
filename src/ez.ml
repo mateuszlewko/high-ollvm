@@ -67,6 +67,8 @@ module Value = struct
 
   let bs_size (t, _) = bs_size_of t
 
+  let (!%) (t, i) = t, Ast.JustInstr (t, i)
+
 end
 
 module Instr = struct

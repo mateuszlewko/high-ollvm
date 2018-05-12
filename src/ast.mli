@@ -167,7 +167,7 @@ and value =
   | VALUE_Array of tvalue list
   | VALUE_Vector of tvalue list
   | VALUE_Zero_initializer
-  | JustInstr of instr
+  | JustInstr of raw_type * instr
   [@@deriving show]
 
 and instr =

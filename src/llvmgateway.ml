@@ -219,8 +219,9 @@ let conversion_type : Ast.conversion_type ->
 (** FIXME: should be split into const/value? *)
 let rec value : env -> Ast.raw_type -> Ast.value -> env * Llvm.llvalue =
   fun env ty ->
-  let open Llvm
-  in function
+  let open Core in 
+  let open Llvm in 
+  function
   | VALUE_Ident i          -> env, lookup env i
   | VALUE_Integer i        -> env, const_int (ll_type env ty) i
   | VALUE_Float f          -> env, const_float (ll_type env ty) f
@@ -228,17 +229,21 @@ let rec value : env -> Ast.raw_type -> Ast.value -> env * Llvm.llvalue =
   | VALUE_Null             -> env, const_null (ll_type env ty)
   | VALUE_Undef            -> env, undef (ll_type env ty)
   | VALUE_Struct s         ->
-     env, const_struct env.c (Array.of_list s |> Array.map (fun (ty, v) -> value env ty v |> snd))
+     env, const_struct env.c (Array.of_list s |> Array.map ~f:(fun (ty, v) -> value env ty v |> snd))
   | VALUE_Packed_struct s  ->
      env, const_packed_struct env.c (Array.of_list s
-                                |> Array.map (fun (ty, v) -> value env ty v |> snd))
+                                |> Array.map ~f:(fun (ty, v) -> value env ty v |> snd))
   | VALUE_Array a          ->
-     env, const_array  (ll_type env ty) (Array.of_list a
-                                |> Array.map (fun (ty, v) -> value env ty v |> snd))
+    printf "array of %s\n" (show_raw_type ty);
+    let (TYPE_Array (_, ty)) = ty in 
+     env, const_array (ll_type env ty) (Array.of_list a
+         |> Array.map ~f:(fun (ty, v) -> 
+              (* printf "ty of arr val: %s\n" (show_raw_type ty); *)
+              value env ty v |> snd))
   | VALUE_Vector v         ->
-     env, const_vector (Array.of_list v |> Array.map (fun (ty, v) -> value env ty v |> snd))
+     env, const_vector (Array.of_list v |> Array.map ~f:(fun (ty, v) -> value env ty v |> snd))
   | VALUE_Zero_initializer -> assert false
-  | JustInstr i            -> instr env i 
+  | JustInstr (t, i)       -> instr env i 
 
 and values env vs = 
   let env = ref env in 
@@ -295,7 +300,7 @@ and instr =
       (type_of llv |> string_of_lltype)
       (show_value v);
 
-     printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
+     (* printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); *)
 
      Out_channel.flush Core.stdout;
      (env, build_gep llv indices "" env.b)
