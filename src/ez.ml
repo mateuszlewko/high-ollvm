@@ -93,7 +93,9 @@ module Instr = struct
     (Type.pointer t, Ast.INSTR_Alloca (t, nb, align))
 
   let load ?(volatile=false) ?(align=None) (ptr_t, value) =
-    let Ast.TYPE_Pointer t = ptr_t in
+    let t = match ptr_t with 
+            | Ast.TYPE_Pointer t -> t 
+            | _                  -> Ast.TYPE_Opaque in
     (t, Ast.INSTR_Load (volatile, (ptr_t, value), align))
 
   let store ?(volatile=false)? (align=None) value pointer =

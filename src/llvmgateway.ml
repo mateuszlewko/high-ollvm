@@ -223,7 +223,11 @@ let rec value : env -> Ast.raw_type -> Ast.value -> env * Llvm.llvalue =
   let open Llvm in 
   function
   | VALUE_Ident i          -> env, lookup env i
-  | VALUE_Integer i        -> env, const_int (ll_type env ty) i
+  | VALUE_Integer i        -> 
+    (* printf "INT TYPE: %s\n" (show_raw_type ty);
+    printf "GEN INT TYPE: %s\n" (string_of_lltype (ll_type env ty));
+    printf "GEN INT VAL: %s\n" (string_of_llvalue (const_int (ll_type env ty) i)); *)
+    env, const_int (ll_type env ty) i
   | VALUE_Float f          -> env, const_float (ll_type env ty) f
   | VALUE_Bool b           -> env, const_int (Llvm.i1_type env.c) (if b then 1 else 0)
   | VALUE_Null             -> env, const_null (ll_type env ty)
@@ -300,7 +304,7 @@ and instr =
       (type_of llv |> string_of_lltype)
       (show_value v);
 
-     (* printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); *)
+     printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
 
      Out_channel.flush Core.stdout;
      (env, build_gep llv indices "" env.b)

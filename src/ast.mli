@@ -223,50 +223,50 @@ and toplevelentry =
 and toplevelentries = toplevelentry list
 
 and global = {
-  g_ident : ident;
-  g_typ : raw_type;
-  g_constant : bool;
-  g_value : value option;
-  g_linkage : linkage option;
-  g_visibility : visibility option;
-  g_dll_storage : dll_storage option;
-  g_thread_local : thread_local_storage option;
-  g_unnamed_addr : bool;
-  g_addrspace : int option;
+  g_ident                  : ident;
+  g_typ                    : raw_type;
+  g_constant               : bool;
+  g_value                  : value option;
+  g_linkage                : linkage option;
+  g_visibility             : visibility option;
+  g_dll_storage            : dll_storage option;
+  g_thread_local           : thread_local_storage option;
+  g_unnamed_addr           : bool;
+  g_addrspace              : int option;
   g_externally_initialized : bool;
-  g_section : string option;
-  g_align : int option;
+  g_section                : string option;
+  g_align                  : int option;
 }
 
 and thread_local_storage = TLS_Localdynamic | TLS_Initialexec | TLS_Localexec
 
 and declaration = {
-  dc_name : ident;
-  dc_type : raw_type;
+  dc_name        : ident;
+  dc_type        : raw_type;
   dc_param_attrs : param_attr list * param_attr list list;
 }
 
 and definition = {
-  df_prototype : declaration;
-  df_args : ident list;
-  df_instrs : block list;
-  df_linkage : linkage option;
-  df_visibility : visibility option;
+  df_prototype   : declaration;
+  df_args        : ident list;
+  df_instrs      : block list;
+  df_linkage     : linkage option;
+  df_visibility  : visibility option;
   df_dll_storage : dll_storage option;
-  df_cconv : cconv option;
-  df_attrs : fn_attr list;
-  df_section : string option;
-  df_align : int option;
-  df_gc : string option;
+  df_cconv       : cconv option;
+  df_attrs       : fn_attr list;
+  df_section     : string option;
+  df_align       : int option;
+  df_gc          : string option;
 }
 
 and block = string * instr list
 
 and modul = {
-  m_name : string;
-  m_target : toplevelentry;
-  m_datalayout : toplevelentry;
-  m_globals : (string * global) list;
+  m_name         : string;
+  m_target       : toplevelentry;
+  m_datalayout   : toplevelentry;
+  m_globals      : (string * global) list;
   m_declarations : (string * declaration) list;
-  m_definitions : (string * definition) list;
-}
+  m_definitions  : (string * definition) list;
+} [@@deriving show]
