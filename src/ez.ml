@@ -293,8 +293,10 @@ module Block = struct
       df_gc = None;
     }
 
-  let block  id instrs =
+  let block id instrs =
     let (_, id) = Value.ident id in (id, instrs)
+
+  let label (id, instrs) = Type.label, Ast.VALUE_Ident id
 
 end
 

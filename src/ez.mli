@@ -240,6 +240,8 @@ module Block : sig
   (** [block label instrs] binds [instrs] to [label], creating a [block]. *)
   val block : Value.t -> Ast.instr list -> block
 
+  val label : block -> Value.t
+
 end
 
   (** Module hanlder. *)
