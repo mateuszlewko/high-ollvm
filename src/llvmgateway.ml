@@ -327,8 +327,17 @@ and instr =
      (env, build_shufflevector v v' v'' "" env.b)
 
   | INSTR_ExtractValue ((t, v), idx)         ->
-     let env, v = value env t v in
-     env, build_extractvalue v idx "" env.b
+     let env, llv = value env t v in
+     let open Core in 
+      printf "extract value of: %s, llv is: %s, llv type: %s, v: %s\n" 
+      (show_value v) 
+      (string_of_llvalue llv)
+      (type_of llv |> string_of_lltype)
+      (show_value v);
+
+    printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
+     Out_channel.flush Core.stdout;
+     env, build_extractvalue llv idx "" env.b
 
   | INSTR_InsertValue ((t, vec), (t', el), idx)    ->
      (* FIXME: llvm api take an int and not a list... *)
