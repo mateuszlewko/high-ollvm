@@ -260,6 +260,7 @@ end
 module Block = struct
 
   type block = Ast.ident * (Ast.instr list)
+  [@@deriving show]
 
   let declare fn args_typ =
     let (t, id) = Value.ident fn in

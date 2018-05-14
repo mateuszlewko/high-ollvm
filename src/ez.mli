@@ -228,6 +228,7 @@ end
 module Block : sig
 
   type block = Ast.ident * (Ast.instr list)
+  [@@deriving show]
 
   (** [declare (ret_ty, fn) args_ty] declares [fn] as a function
       returning [ret_ty] and requiring arguments of types [args_ty]. *)
