@@ -297,14 +297,14 @@ and instr =
      (* show_tvalue  *)
      let open Core in 
      let env, llv = value env t v in
-     printf "gep of: %s, llv is: %s, indices: [%s], llv type: %s, v: %s\n" 
+     (* printf "gep of: %s, llv is: %s, indices: [%s], llv type: %s, v: %s\n" 
       (show_value v) 
       (string_of_llvalue llv)
       (Array.fold indices ~f:(fun a v -> a ^ "; " ^ string_of_llvalue v) ~init:"")
       (type_of llv |> string_of_lltype)
       (show_value v);
 
-     printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
+     printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); *)
 
      Out_channel.flush Core.stdout;
      (env, build_gep llv indices "" env.b)
@@ -329,13 +329,13 @@ and instr =
   | INSTR_ExtractValue ((t, v), idx)         ->
      let env, llv = value env t v in
      let open Core in 
-      printf "extract value of: %s, llv is: %s, llv type: %s, v: %s\n" 
+      (* printf "extract value of: %s, llv is: %s, llv type: %s, v: %s\n" 
       (show_value v) 
       (string_of_llvalue llv)
       (type_of llv |> string_of_lltype)
       (show_value v);
 
-    printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m);
+    printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); *)
      Out_channel.flush Core.stdout;
      env, build_extractvalue llv idx "" env.b
 
@@ -348,8 +348,13 @@ and instr =
         (env, build_insertvalue vec el idx "" env.b)
      | _ -> assert false end
 
-  | INSTR_Call (tail, (t, i), args)             ->
-     let fn = lookup_fn env i in
+  | INSTR_Call (tail, (t, v), args)             ->
+     let env, fn = 
+      match v with 
+      | Ast.VALUE_Ident id -> env, lookup_fn env id 
+      | v                  -> value env t v
+      in
+
      let env, args = values env args in
      (env, build_call fn args res_name env.b )
 

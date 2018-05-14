@@ -182,7 +182,7 @@ and instr =
   | INSTR_ShuffleVector of tvalue * tvalue * tvalue
   | INSTR_ExtractValue of tvalue * int
   | INSTR_InsertValue of tvalue * tvalue * int list
-  | INSTR_Call of bool * tident * (tvalue list)
+  | INSTR_Call of bool * tvalue * (tvalue list)
   | INSTR_Alloca of raw_type * tvalue option * int option
   | INSTR_Load of bool * tvalue * int option
   | INSTR_Phi of raw_type * (value * ident) list
