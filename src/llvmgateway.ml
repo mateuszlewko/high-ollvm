@@ -503,7 +503,9 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
 
 let create_block : env -> Ast.block -> Llvm.llvalue -> env =
   fun env b fn ->
-  if List.mem_assoc (fst b) env.labels then assert false ;
+  if List.mem_assoc (fst b) env.labels 
+  then Core.printf "WARNING: block with name: %s already exists\n" (fst b);
+
   let llb = Llvm.append_block env.c (fst b) fn in
   { env with labels = (fst b, llb) :: env.labels }
 
