@@ -55,18 +55,20 @@ module Value = struct
 
   let null = Type.opaque, Ast.VALUE_Null
 
-  let bs_size_of t =
+  let rec bs_size_of t =
     let open Ast in 
     let open Core in 
     match t with 
     | TYPE_I x when x <= 8 -> 1
     | TYPE_I 32            -> 4
     | TYPE_Pointer _       -> 8
+    | TYPE_Struct ts       -> List.map ts bs_size_of |> BatList.sum
     | other                -> failwith (sprintf "size of %s not supported" 
                                         (show_raw_type other))
 
   let bs_size (t, _) = bs_size_of t
 
+  let t_size t = bs_size_of t
   let (!%) (t, i) = t, Ast.JustInstr (t, i)
 
 end
