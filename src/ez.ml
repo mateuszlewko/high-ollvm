@@ -79,7 +79,7 @@ module Instr = struct
 
   let ident = Value.ident
 
-  let call ?(tail=false) ((t, _) as fn) args =
+  let call ?(tail=true) ((t, _) as fn) args =
     (t, Ast.INSTR_Call (tail, fn, args))
 
   let phi value_label =
