@@ -480,11 +480,11 @@ and instr =
 
 let global : env -> Ast.global -> env =
   fun env g ->
-  let v        = Core.Option.value_exn g.g_value in 
+  let v             = Core.Option.value_exn g.g_value in 
   let env, llv_init = value env g.g_typ v in
-  let name     = string_of_ident g.g_ident in
-  let llv      = Llvm.define_global name llv_init env.m in
-
+  let name          = string_of_ident g.g_ident in
+  let llv           = Llvm.define_global name llv_init env.m in
+  
   Llvm.set_global_constant g.g_constant llv; 
   Core.printf "adding global: %s\n" (show_ident g.g_ident);
 
