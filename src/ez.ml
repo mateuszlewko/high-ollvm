@@ -47,9 +47,12 @@ module Value = struct
   let array l =
     (Type.array (List.length l) (fst (List.hd l)), Ast.VALUE_Array l)
 
-  let structure l =
-    (Type.structure (List.map fst l),
-     Ast.VALUE_Struct l)
+  let structure ?(packed=false) l =
+     let t = Type.structure ~packed (List.map fst l) in 
+     let s = if packed then Ast.VALUE_Packed_struct l 
+             else Ast.VALUE_Struct l in 
+
+    t, s
 
   let ident (t, Ast.VALUE_Ident id) = (t, id)
 
@@ -121,8 +124,8 @@ module Instr = struct
 
   let bitcast v ty = ty, Ast.INSTR_Bitcast (v, ty)
 
-  let memcpy ?(volatile=false) from_ptr to_ptr len = 
-    Type.void, Ast.INSTR_Memcpy (from_ptr, to_ptr, len, volatile)
+  let memcpy ?(volatile=false) ~src ~dest len = 
+    Type.void, Ast.INSTR_Memcpy (src, dest, len, volatile)
 
   let malloc raw_type = 
     (* let id = Ast.ID_Local "__last" in 

@@ -44,7 +44,7 @@ module Value : sig
   val double    : float  -> t
   val vector    : t list -> t
   val array     : t list -> t
-  val structure : t list -> t
+  val structure : ?packed:bool -> t list -> t
   val ident     : t      -> Type.t * Ast.ident
   val null      : t
 
@@ -93,7 +93,7 @@ module Instr : sig
   val gep              : Value.t -> int list -> t
   
   val bitcast : Value.t -> Ast.raw_type -> t
-  val memcpy  : ?volatile:bool -> Value.t ->  Value.t -> Value.t -> t
+  val memcpy  : ?volatile:bool -> src:Value.t -> dest:Value.t -> Value.t -> t
 
   val malloc : High_ollvm__.Ast.raw_type -> t
 
