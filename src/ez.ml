@@ -56,7 +56,8 @@ module Value = struct
 
   let ident (t, Ast.VALUE_Ident id) = (t, id)
 
-  let null = Type.opaque, Ast.VALUE_Null
+  let null     = Type.opaque, Ast.VALUE_Null
+  let null_t t = t, Ast.VALUE_Null
 
   let rec bs_size_of t =
     let open Ast in 

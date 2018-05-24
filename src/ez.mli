@@ -47,6 +47,7 @@ module Value : sig
   val structure : ?packed:bool -> t list -> t
   val ident     : t      -> Type.t * Ast.ident
   val null      : t
+  val null_t    : Type.t -> t
 
   (** Size in bytes of a given value *)
   val bs_size   : t      -> int 
