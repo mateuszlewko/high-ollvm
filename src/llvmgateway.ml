@@ -525,7 +525,8 @@ let definition : env -> Ast.definition -> env =
   then (
     Core.printf "possibly function redefinition: %s\n" (string_of_ident_raw df.df_prototype.dc_name);
     flush_all ();
-    assert false (* env *)
+    (* assert false  *)
+    env
   )
   else begin
 
