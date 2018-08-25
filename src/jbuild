@@ -10,4 +10,7 @@
   (public_name high_ollvm)
   (preprocess (pps (ppx_deriving.std 
                     ppx_enumerate)))
-  (libraries (core llvm batteries))))
+  (libraries (core 
+              llvm 
+              batteries
+              logs))))

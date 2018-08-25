@@ -31,10 +31,12 @@ let string_of_ident_raw : Ast.ident -> string = function
 let (%>) f g = fun x -> g (f x)
 
 let print_mem env =
-  List.iter (fst %> string_of_ident_raw %> (Core.printf "mem got: %s\n")) env.mem
+  List.iter (fst %> string_of_ident_raw %> fun s -> 
+    Logs.debug (fun m -> m "mem got: %s\n" s)) env.mem
 
 let print_globals env =
-  List.iter (fst %> (Core.printf "globals got: %s\n")) env.globals
+  List.iter (fst %> fun s -> 
+    Logs.debug (fun m -> m "globals got: %s\n" s)) env.globals
 
 let lookup env id = 
   try List.assoc id env.mem
@@ -43,7 +45,7 @@ let lookup env id =
   with e ->  
     match Llvm.lookup_function (string_of_ident id) env.m with 
     | None ->
-      Core.printf "not found: %s\n" (string_of_ident id);
+      Logs.debug (fun m -> m "not found: %s\n" (string_of_ident id));
       print_mem env;
       print_globals env;
       Core.Out_channel.flush Core.stdout;
@@ -60,9 +62,10 @@ let lookup_fn env (id : Ast.ident) : Llvm.llvalue =
     | Some fn -> fn
     | _       -> 
       let open Core in 
-      printf "ENV mem start\n";
-      env.mem |> List.iter ~f:(fst %> show_ident %> printf "id: %s\n");
-      printf "---\n";
+      Logs.debug (fun m -> m "ENV mem start\n");
+      env.mem |> List.iter ~f:(fst %> show_ident %> 
+        fun s -> Logs.debug (fun m -> m "id: %s\n" s));
+      Logs.debug (fun m -> m "---\n");
       Core.sprintf "lookup_fn not found: %s" i |> failwith
 
 let label : env -> Ast.ident -> Llvm.llbasicblock =
@@ -238,12 +241,20 @@ let rec value : env -> Ast.raw_type -> Ast.value -> env * Llvm.llvalue =
      env, const_packed_struct env.c (Array.of_list s
                                 |> Array.map ~f:(fun (ty, v) -> value env ty v |> snd))
   | VALUE_Array a          ->
-    printf "array of %s\n" (show_raw_type ty);
-    let (TYPE_Array (_, ty)) = ty in 
-     env, const_array (ll_type env ty) (Array.of_list a
-         |> Array.map ~f:(fun (ty, v) -> 
-              (* printf "ty of arr val: %s\n" (show_raw_type ty); *)
-              value env ty v |> snd))
+    Logs.debug (fun m -> m "array of %s\n" (show_raw_type ty));
+    (* let tty = ty in  *)
+    (* Logs.debug (fun m -> m "array") *)
+    let ty = 
+      match ty with 
+      | TYPE_Array (_, ty) -> ty 
+      | ty                 -> ty in 
+      
+    let arr = const_array (ll_type env ty) (Array.of_list a
+        |> Array.map ~f:(fun (ty, v) -> 
+            (* printf "ty of arr val: %s\n" (show_raw_type ty); *)
+            value env ty v |> snd)) in 
+      env, arr
+      (* build_array_malloc (ll_type env tty) arr "" env.b *)
   | VALUE_Vector v         ->
      env, const_vector (Array.of_list v |> Array.map ~f:(fun (ty, v) -> value env ty v |> snd))
   | VALUE_Zero_initializer -> assert false
@@ -335,8 +346,8 @@ and instr =
       (type_of llv |> string_of_lltype)
       (show_value v);
 
-    printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); *)
-     Out_channel.flush Core.stdout;
+      printf "---- entire module ----\n%s\n\n" (string_of_llmodule env.m); 
+      Out_channel.flush Core.stdout; *)
      env, build_extractvalue llv idx "" env.b
 
   | INSTR_InsertValue ((t, vec), (t', el), idx)    ->
@@ -356,7 +367,9 @@ and instr =
       in
 
      let env, args = values env args in
-     (env, build_call fn args res_name env.b )
+     let ll_call = build_call fn args res_name env.b in 
+     set_tail_call true ll_call;
+     env, ll_call
 
   | INSTR_Alloca (ty, nb, _)          -> 
        begin
@@ -486,7 +499,7 @@ let global : env -> Ast.global -> env =
   let llv           = Llvm.define_global name llv_init env.m in
   
   Llvm.set_global_constant g.g_constant llv; 
-  Core.printf "adding global: %s\n" (show_ident g.g_ident);
+  Logs.debug (fun m -> m "adding global: %s\n" (show_ident g.g_ident));
 
   {env with mem = (g.g_ident, llv) :: env.mem;
             globals = (string_of_ident g.g_ident, llv)::env.globals }
@@ -496,7 +509,7 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
   let name = (string_of_ident dc.dc_name) in
   let fn =  match Llvm.lookup_function name env.m with
     | None    -> 
-      Core.printf "declaring function: %s\n" name;
+      Logs.debug (fun m -> m "declaring function: %s\n" name);
       Llvm.declare_function name (ll_type env dc.dc_type) env.m ;
     | Some fn -> fn in
   ({ env with globals = (name, fn)::env.globals }, fn)
@@ -504,7 +517,8 @@ let declaration : env -> Ast.declaration -> env * Llvm.llvalue =
 let create_block : env -> Ast.block -> Llvm.llvalue -> env =
   fun env b fn ->
   if List.mem_assoc (fst b) env.labels 
-  then Core.printf "WARNING: block with name: %s already exists\n" (fst b);
+  then Logs.debug 
+    (fun m -> m "WARNING: block with name: %s already exists\n" (fst b));
 
   let llb = Llvm.append_block env.c (fst b) fn in
   { env with labels = (fst b, llb) :: env.labels }
@@ -523,7 +537,8 @@ let definition : env -> Ast.definition -> env =
   (* Do not allow function redefinition. May change? *)
   if Array.length (Llvm.basic_blocks fn) <> 0
   then (
-    Core.printf "possibly function redefinition: %s\n" (string_of_ident_raw df.df_prototype.dc_name);
+    Logs.debug (fun m -> m "possibly function redefinition: %s\n" 
+                              (string_of_ident_raw df.df_prototype.dc_name));
     flush_all ();
     (* assert false  *)
     env
